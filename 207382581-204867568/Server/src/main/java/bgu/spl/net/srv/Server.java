@@ -5,17 +5,6 @@ import bgu.spl.net.api.MessagingProtocol;
 import java.io.Closeable;
 import java.util.function.Supplier;
 
-/*
-mvn compile
-mvn package
-for testing here are some terminal commands:
-    Reactor server:
-        mvn exec:java -Dexec.mainClass=”bgu.spl.net.impl.BGSServer.ReactorMain” -
-        Dexec.args=”<port> <Num of threads> ”
-    • Thread per client server:
-        mvn exec:java -Dexec.mainClass=”bgu.spl.net.impl.BGSServer.TPCMain” -
-        Dexec.args=”<port>”
- */
 public interface Server<T> extends Closeable {
 
     /**
