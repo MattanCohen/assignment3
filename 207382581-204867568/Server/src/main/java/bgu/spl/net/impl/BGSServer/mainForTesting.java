@@ -31,16 +31,16 @@ public static void main(String[]args){
     // @inv command ~ "NOTIFICATION"_"0/1"_"postingUserString"_"contentString"
     // @inv command ~ "ERROR"_"ErroredMessageOpCode"
     // @inv command ~ "ACK"_"Optional"
-    String command="ERROR NOTIFICATION";  //desired answer: ";911"
-    testEncode(command);
+//    String command="ERROR NOTIFICATION";  //desired answer: ";911"
+//    testEncode(command);
 //    String command2="NOTIFICATION 1 ROI HOWAERYOU";  //desired answer: ";911"
 //    testEncode(command2);
 
 //
-//    String command="2Mattan023212377aA01;"; //desired answer:
-//    StringBuilder flipper=new StringBuilder(command);
-//    flipper.reverse();
-//    testDecode(Convertor.stringToBytes(flipper.toString()));
+    String command="2Mattan023212377aA01;"; //desired answer:
+    StringBuilder flipper=new StringBuilder(command);
+    flipper.reverse();
+    testDecode(Convertor.stringToBytes(flipper.toString()));
 
 }
 
@@ -194,8 +194,8 @@ public static void main(String[]args){
     private static void testDecode(byte[] bytes){
         System.out.println("----------------------testDecode--------------------------");
         System.out.println("Original command in bytes: "+bytes);
-        System.out.println("Original command in String: "+Convertor.bytesToString(bytes));
-        String command=translateBytes(bytes);
+        System.out.println("Original command in raw String: "+Convertor.bytesToString(bytes));
+        String command=testTranslateBytes(bytes);
         System.out.println("Flipped command in String: "+command);
 
         //get the opCode of the message
@@ -208,7 +208,7 @@ public static void main(String[]args){
 
 
     }
-    private static String translateBytes(byte[] bytes){
+    private static String testTranslateBytes(byte[] bytes){
         //make flippedCommand to be the message we ought to do ordered BIG ENDIAN
         String flippedCommand=Convertor.bytesToString(bytes);
         //save the command as ans and flip it

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
+
     private byte[] bytes = new byte[1 << 10]; //start with 1k
     private int len = 0;
 
@@ -26,6 +27,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
             //get the opCode of the message
             short shortOpCode=Convertor.stringAsBytesToOpcode(toDo.toString().substring(0,1));
             String opCode=Convertor.opcodeToString(shortOpCode);
+
         }
         //if nextByte isn't ';', add nextByte to bytes array and return null (message is still readeded)
         pushByte(nextByte);

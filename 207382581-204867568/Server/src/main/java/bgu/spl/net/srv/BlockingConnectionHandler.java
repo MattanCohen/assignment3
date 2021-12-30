@@ -35,6 +35,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
             while (!protocol.shouldTerminate() && connected && (read = in.read()) >= 0) {
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
+                    // we only expect a response if a notification received
                     T response = protocol.process(nextMessage);
                     if (response != null) {
                         out.write(encdec.encode(response));
@@ -55,6 +56,11 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
         sock.close();
     }
 
+    /**
+     * used to send ack/error to the client (bypassing writeQueue)
+     * going to be used by the BGSProtocol
+     * @param msg ack/error
+     */
     @Override
     public void send(T msg) {
 
