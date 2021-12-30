@@ -4,7 +4,9 @@ import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.srv.bidi.ConnectionHandler;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -81,6 +83,14 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
         return !chan.isOpen();
     }
 
+    /**
+     * @inv when calling continue write, there is a returning command
+     *      in writeQueue that needs to be written (to the client's socket)
+     * function continueWrite writes a pull notification (a notification that
+     * can get pulled by the client at some time) and NOT PUSH NOTIFICATIONS.
+     * So, when BGSProtocol wants to send the client push notification such as
+     * ERROR or ACK, it will use send(msg) instead of continueWrite
+     */
     public void continueWrite() {
         while (!writeQueue.isEmpty()) {
             try {
@@ -118,13 +128,24 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
     }
 
 
-    /**
-     *                  WE NEED TO IMPLEMENT THIS
-     *                  WHAT DOES SEND DO DAFUQ
-     * @param msg
-     */
+     /**
+     * used to send push notification to a client (bypassing writeQueue)
+     * going to be used by the BGSProtocol
+     * @param msg ack/error
+     * @post socket's immediate output stream is msg
+     * */
     @Override
     public void send(T msg) {
-
+        // hook the socket
+        try (Socket sock = this.chan.socket()) {
+            //get socket's output stream
+            BufferedOutputStream out = new BufferedOutputStream(sock.getOutputStream());
+            //write the encoded msg to the client
+            out.write(encdec.encode(msg));
+            //flush it so the client receives it instantly
+            out.flush();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }

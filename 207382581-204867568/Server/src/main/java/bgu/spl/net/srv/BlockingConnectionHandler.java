@@ -35,8 +35,8 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
             while (!protocol.shouldTerminate() && connected && (read = in.read()) >= 0) {
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
-                    // we only expect a response if a notification received
                     T response = protocol.process(nextMessage);
+                    // when a connectionHandler is blocking, every message is a push notification
                     if (response != null) {
                         out.write(encdec.encode(response));
                         out.flush();
@@ -57,12 +57,21 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     }
 
     /**
-     * used to send ack/error to the client (bypassing writeQueue)
+     * used to send push notification to a client (bypassing writeQueue)
      * going to be used by the BGSProtocol
      * @param msg ack/error
+     * @post socket's immediate output stream is msg
      */
     @Override
     public void send(T msg) {
-
+        try (Socket sock = this.sock) {
+            out = new BufferedOutputStream(sock.getOutputStream());
+            //write the encoded msg to the cliend
+            out.write(encdec.encode(msg));
+            //flush it so the client receives it instantly
+            out.flush();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
