@@ -1,9 +1,6 @@
 package bgu.spl.net;
 
 
-
-
-
 import java.nio.charset.StandardCharsets;
 
 public class Convertor {

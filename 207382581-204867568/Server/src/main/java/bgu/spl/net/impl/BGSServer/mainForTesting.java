@@ -1,6 +1,7 @@
 package bgu.spl.net.impl.BGSServer;
 
 import bgu.spl.net.Convertor;
+import bgu.spl.net.api.MessageEncoderDecoder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
@@ -52,7 +53,7 @@ public static void main(String[]args){
     System.out.println("----------------------testEncode--------------------------");
     System.out.println("original command: "+command);
     //get the byte array from encode
-    byte[] fromFunction= encode(command);
+    byte[] fromFunction= encodeTest(command);
     System.out.println("a byte array has been created from the function \"encode(original command)\" in *BGSEncoderDecoder class*.");
     System.out.println();
     System.out.println("array from function written in Bytes: ");
@@ -81,7 +82,7 @@ public static void main(String[]args){
    */
     System.out.println();
 }
-    private static byte [] encode(String command) {
+    private static byte [] encodeTest(String command) {
         LinkedList<Byte> ans = new LinkedList<Byte>();
         //get opCode from the command
         short opcode = Convertor.extractOpcodeAsShortFromString(command);
