@@ -1,7 +1,6 @@
 package bgu.spl.net.impl.BGSServer;
 
 import bgu.spl.net.Convertor;
-import bgu.spl.net.api.MessageEncoderDecoder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
