@@ -2,6 +2,7 @@ package bgu.spl.net;
 
 
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 
 public class Convertor {
     /**
@@ -37,6 +38,9 @@ public class Convertor {
     public static String bytesToString (byte[] byteArr){
         return new String(byteArr, StandardCharsets.UTF_8);
     }
+    public static String bytesToString (LinkedList<Byte> byteArr){
+        return new String(Convertor.linkedListToByteArray(byteArr), StandardCharsets.UTF_8);
+    }
 
     /**
      *
@@ -48,7 +52,6 @@ public class Convertor {
     }
 
     public static String shortToString (short x){
-        System.out.println("Value of: \""+String.valueOf(x)+"\"");
         return String.valueOf(x);
     }
 
@@ -246,5 +249,18 @@ public class Convertor {
                 return "12";
             default: return null;
         }
+    }
+
+    public static byte[] linkedListToByteArray(LinkedList<Byte> B){
+        byte [] ans=new byte[B.size()];
+        for (int i=0; i<ans.length; i++)
+            ans[i]=B.get(i);
+        return ans;
+    }
+    public static LinkedList<Byte> byteArrayToLinkedList(byte[] B){
+        LinkedList<Byte> ans=new LinkedList<>();
+        for (byte b: B)
+            ans.add(b);
+        return ans;
     }
 }

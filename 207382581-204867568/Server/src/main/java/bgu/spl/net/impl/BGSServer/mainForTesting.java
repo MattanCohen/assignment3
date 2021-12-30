@@ -2,6 +2,7 @@ package bgu.spl.net.impl.BGSServer;
 
 import bgu.spl.net.Convertor;
 
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
@@ -28,13 +29,18 @@ public static void main(String[]args){
 //    testRemoveOpcodeFromString("LOGSTAT");
 
     // @inv command ~ "NOTIFICATION"_"0/1"_"postingUserString"_"contentString"
-//    String command="NOTIFICATION 0 name content";  //desired answer: ";0tnetnoc0eman09"
-//    testEncode(command);
+    // @inv command ~ "ERROR"_"ErroredMessageOpCode"
+    // @inv command ~ "ACK"_"Optional"
+    String command="ERROR NOTIFICATION";  //desired answer: ";911"
+    testEncode(command);
+//    String command2="NOTIFICATION 1 ROI HOWAERYOU";  //desired answer: ";911"
+//    testEncode(command2);
 
-    String command="2Mattan023212377aA01;"; //desired answer:
-    StringBuilder flipper=new StringBuilder(command);
-    flipper.reverse();
-    testDecode(Convertor.stringToBytes(flipper.toString()));
+//
+//    String command="2Mattan023212377aA01;"; //desired answer:
+//    StringBuilder flipper=new StringBuilder(command);
+//    flipper.reverse();
+//    testDecode(Convertor.stringToBytes(flipper.toString()));
 
 }
 
@@ -52,7 +58,7 @@ public static void main(String[]args){
     System.out.println("----------------------testEncode--------------------------");
     System.out.println("original command: "+command);
     //get the byte array from encode
-    byte[] fromFunction= encodeTest(command);
+    byte[] fromFunction= BGSEncoderDecoderDecodeTest(command);
     System.out.println("a byte array has been created from the function \"encode(original command)\" in *BGSEncoderDecoder class*.");
     System.out.println();
     System.out.println("array from function written in Bytes: ");
@@ -60,28 +66,30 @@ public static void main(String[]args){
         System.out.print(b);
     System.out.println();
     System.out.println("array from function written in String: ");
-    //since the last two bytes represent a single short (and are not singly byte-able, needs to be read by twos)
-    byte [] fromFunctionNoOp=new byte [fromFunction.length-2];
-    for (int i=0; i< fromFunctionNoOp.length; i++) fromFunctionNoOp[i]=fromFunction[i];
-    System.out.print(Convertor.bytesToString(fromFunctionNoOp)+Convertor.extractOpcodeAsShortFromString(command));
-    /*
-    for (byte b: fromFunction){
-        //skip the last two digits to make short later
-        if (b!=fromFunction[fromFunction.length-2] & b!=fromFunction[fromFunction.length-1]){
-            byte[] B= {b};
-            System.out.print(Convertor.bytesToString(B));
-
-        }
-    }
-    //separate the last two digits to make short USING BIG ENDIAN
-    byte[] x={fromFunction[fromFunction.length - 1], fromFunction[fromFunction.length - 2]};
-    short twoLastDigits=Convertor.bytesToShort(x);
-    //print the short
-    System.out.println(String.valueOf(twoLastDigits));
-   */
+    //if the second (BIG ENDIAN) byte is 9, print notification
+    if ((char)(fromFunction[fromFunction.length-2])==(byte)(9))
+        printNotificationTest(fromFunction);
+        //print error
+    else if (fromFunction[fromFunction.length-2]==(byte)(11))
+        printErrorTest(fromFunction);
     System.out.println();
 }
-    private static byte [] encodeTest(String command) {
+    public static byte[] BGSEncoderDecoderDecodeTest(String command) {
+        //get opCode:
+        switch (Convertor.extractOpcodeAsShortFromString(command)){
+            //if command is NOTIFICATION
+            case 9:
+                return testNotificationToBytes(command);
+            // if command is ACK
+            case 10:
+                return testAckToBytes(command);
+            //if command is ERROR
+            case 11:
+                return testErrorToBytes(command);
+            default: return null;
+        }
+    }
+    private static byte [] testNotificationToBytes(String command) {
         LinkedList<Byte> ans = new LinkedList<Byte>();
         //get opCode from the command
         short opcode = Convertor.extractOpcodeAsShortFromString(command);
@@ -118,12 +126,71 @@ public static void main(String[]args){
         ans.addFirst((byte) '0');
         //add ; to inform end of message
         ans.addFirst((byte) ';');
-        byte[] ret = new byte[ans.size()];
-        for (int i = 0; i < ans.size(); i++)
-            ret[i] = ans.get(i);
-        return ret;
+        return Convertor.linkedListToByteArray(ans);
+    }
+    public static void printNotificationTest(byte[] fromFunction){
+        byte [] opCodeExtract={fromFunction[fromFunction.length-1],fromFunction[fromFunction.length-2]};
+        short opCode= Convertor.bytesToShort(opCodeExtract);
+        LinkedList<Byte> fromFunctionInList=Convertor.byteArrayToLinkedList(fromFunction);
+        fromFunctionInList.removeLast();
+        fromFunctionInList.removeLast();
+        opCodeExtract=Convertor.linkedListToByteArray(fromFunctionInList);
+        System.out.println(Convertor.bytesToString(opCodeExtract)+Convertor.shortToString(opCode));
     }
 
+    /**
+     *
+     * @param command
+     * @return
+     */
+    public static byte[] testAckToBytes(String command){
+        return null;
+    }
+
+    /**
+     * @inv command  ~ "ERROR"_"ErroredMessageOpcode"
+     * @param command satisfies @inv
+     * @return byte array ~ ';' + 'ErroredMessageOpCodeAsShort' + 'ErrorOpCode'
+     *                      ;   +               x               +       11
+     */
+    public static byte[] testErrorToBytes(String command){
+        LinkedList<Byte> ans = new LinkedList<Byte>();
+        //get opCode from the command
+        short opcode = Convertor.extractOpcodeAsShortFromString(command);
+        //remove opCode from command
+        command=Convertor.removeOpcodeFromString(command);
+        //push opcode to answer
+        ans.addFirst((byte)(opcode<<8));
+        ans.addFirst((byte) opcode);
+        //now remaining string in "command" is the opCode of the failed command (the one that returned error)
+        short erroredOpCode=Convertor.extractOpcodeAsShortFromString(command);
+        //push opcode to answer
+        ans.addFirst((byte)(erroredOpCode<<8));
+        ans.addFirst((byte) erroredOpCode);
+        //add ; to inform end of message
+        ans.addFirst((byte) ';');
+        return Convertor.linkedListToByteArray(ans);
+    }
+    public static void printErrorTest(byte [] b){
+        System.out.println("Hey");
+        LinkedList<Byte> toPrint=Convertor.byteArrayToLinkedList(b);
+        //extract opCode from b
+        byte[] opCodeArr= {toPrint.get(toPrint.size()-1),toPrint.get(toPrint.size()-2)};
+        short opCode=Convertor.bytesToShort(opCodeArr);
+        toPrint.removeLast();
+        toPrint.removeLast();
+        //extract errored message opCode from b
+        byte[] ErrprOpCodeArr= {toPrint.get(toPrint.size()-1),toPrint.get(toPrint.size()-2)};
+        short erroredOpCode=Convertor.bytesToShort(ErrprOpCodeArr);
+        toPrint.removeLast();
+        toPrint.removeLast();
+        System.out.println(Convertor.bytesToString(toPrint)+""+erroredOpCode+""+opCode);
+    }
+
+    /**
+     *
+     * @param bytes
+     */
     private static void testDecode(byte[] bytes){
         System.out.println("----------------------testDecode--------------------------");
         System.out.println("Original command in bytes: "+bytes);

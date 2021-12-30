@@ -80,16 +80,39 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         len = 0;
     }
 
+
     /**
-     *
-     * @param command in string to encode in order to write to client. only command that isn't push notification is only notification
-     * @inv   command ~ "NOTIFICATION"_"0/1"_"postingUserString"_"contentString"
-     * @inv command starst with 9
-     * @return byte array of encoded notification message ~ { ';' , '0' , content string big endian , '0' , user string big endian , 0/1 for pm/public , 9 as short }
- *                                                           [opcodeInShort,0/1forPmOrPublic,PostingUserInUTF8,0,ContentInUTF8,0,;]
+     * notification to encode.
+     * @inv command's first word
+     * @param command
+     * @return
      */
     @Override
     public byte[] encode(String command) {
+        //get opCode:
+        switch (Convertor.extractOpcodeAsShortFromString(command)){
+            //if command is NOTIFICATION
+            case 9:
+                return notificationToBytes(command);
+            // if command is ACK
+            case 10:
+                return ackToBytes(command);
+            //if command is ERROR
+            case 11:
+                return errorToBytes(command);
+            default: return null;
+        }
+    }
+
+    /**
+     *
+     * @param command in string to encode in order to write to client notification
+     * @inv   command ~ "NOTIFICATION"_"0/1"_"postingUserString"_"contentString"
+     * @inv command starts with 9
+     * @return byte array of encoded notification message ~ { ';' , '0' , content string big endian , '0' , user string big endian , 0/1 for pm/public , 9 as short }
+ *                                                           [opcodeInShort,0/1forPmOrPublic,PostingUserInUTF8,0,ContentInUTF8,0,;]
+     */
+    public byte[] notificationToBytes(String command) {
         LinkedList<Byte> ans=new LinkedList<Byte>();
         //get opCode from the command
         short opcode=Convertor.extractOpcodeAsShortFromString(command);
@@ -125,44 +148,39 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         //add 0 to inform end of string
         ans.addFirst((byte)'0');
         //add ; to inform end of message
-        ans.addFirst((byte)';');
-        byte [] ret=new byte[ans.size()];
-        for (int i=0; i<ans.size(); i++)
-            ret[i]=ans.get(i);
-        return ret;
-    }
-
-    /*
-    @Override
-    public byte[] encode(String command) {
-        //get opCode:
-        short opcode=getOpCode(command);
-        switch (opcode){
-            //if command is NOTIFICATION
-            case 9:
-                return notificationToBytes(opcode,command);
-            // if command is ACK
-            case 10:
-                return ackToBytes(opcode,command);
-            //if command is ERROR
-            case 11:
-                return errorToBytes(opcode,command);
-            default: return null;
-        }
+        ans.addFirst((byte) ';');
+        return Convertor.linkedListToByteArray(ans);
     }
 
 
-//    private short getOpCode(String command){
-        //if we only need to return ACK
-//        if (command=="ACK"){
-//            return Convertor.commandToOpcode(command);
-//        }
-        //if we need to return ERROR (Something) or ACK (Something) or NOTIFICATION (Something):
-        //we make a substring from the start to the first space (subtract Something)
+    public byte[] ackToBytes(String command){
+        return null;
+    }
+    /**
+     * @inv command  ~ "ERROR"_"ErroredMessageOpcode"
+     * @param command satisfies @inv
+     * @return byte array ~ ';' + 'ErroredMessageOpCodeAsShort' + 'ErrorOpCode'
+     *                      ;   +               x               +       11
+     */
 
-//        return Convertor.commandToOpcode(command);
-//    }
-
+    public byte[] errorToBytes(String command){
+        LinkedList<Byte> ans = new LinkedList<Byte>();
+        //get opCode from the command
+        short opcode = Convertor.extractOpcodeAsShortFromString(command);
+        //remove opCode from command
+        command=Convertor.removeOpcodeFromString(command);
+        //push opcode to answer
+        ans.addFirst((byte)(opcode<<8));
+        ans.addFirst((byte) opcode);
+        //now remaining string in "command" is the opCode of the failed command (the one that returned error)
+        short erroredOpCode=Convertor.extractOpcodeAsShortFromString(command);
+        //push opcode to answer
+        ans.addFirst((byte)(erroredOpCode<<8));
+        ans.addFirst((byte) erroredOpCode);
+        //add ; to inform end of message
+        ans.addFirst((byte) ';');
+        return Convertor.linkedListToByteArray(ans);
+    }
 
 
 //    private byte [] ackToBytes(short opcode,String command){
@@ -190,7 +208,6 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
 //                        Convertor.shortToBytes(erroredMessage)[1],  Convertor.shortToBytes(erroredMessage)[0]};
 //        return B;
 //    }
-     */
 
 
 }
