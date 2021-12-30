@@ -17,7 +17,6 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
      * @param nextByte the next byte to consider for the current message we're decoding
      * @return the command translated from bytes to string for the protocol to process
      */
-    //hey!!
     @Override
     public String decodeNextByte(byte nextByte) {
         //if that byte ends, command now has all information.
