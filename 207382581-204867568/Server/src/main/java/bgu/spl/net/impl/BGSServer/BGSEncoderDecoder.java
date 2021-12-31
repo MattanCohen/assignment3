@@ -156,8 +156,98 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
 
 
     public byte[] ackToBytes(String command){
-        return null;
+        // use linked List and convert to byte[] at the end
+        LinkedList<Byte> B = new LinkedList<>();
+        // each command always ends with a ';'
+        B.addFirst((byte) ';');
+
+        String[] commandSplit = command.split(" ");
+
+        short ackOpCode = Convertor.extractOpcodeAsShortFromString(commandSplit[0]);
+        short messageOpCode = Convertor.extractOpcodeAsShortFromString(commandSplit[1]);
+
+        // No optional information in ACK
+        if (commandSplit.length==2) {
+            // add 2 bytes for ackCode and message opCode in reversed order + BigEndian
+            B.addFirst(Convertor.shortToBytes(ackOpCode)[1]);
+            B.addFirst(Convertor.shortToBytes(ackOpCode)[0]);
+            B.addFirst(Convertor.shortToBytes(messageOpCode)[1]);
+            B.addFirst(Convertor.shortToBytes(messageOpCode)[0]);
+
+        }
+        // Additional information based on messageOpCode
+        else {
+            switch (messageOpCode) {
+                // ACK-Opcode FOLLOW-OpCODE <username>
+                case 4: {
+                    String commandNoOpCodes = Convertor.removeOpcodeFromString(Convertor.removeOpcodeFromString(command));
+                    byte[] userNBytes = Convertor.stringToBytes(commandNoOpCodes);
+
+                    B.addFirst(Convertor.shortToBytes(ackOpCode)[1]);
+                    B.addFirst(Convertor.shortToBytes(ackOpCode)[0]);
+                    B.addFirst(Convertor.shortToBytes(messageOpCode)[1]);
+                    B.addFirst(Convertor.shortToBytes(messageOpCode)[0]);
+
+                    // add <username> bytes in reversed order + BigEndian
+                    for (int i = 0; i < userNBytes.length; i++) {
+                        B.addFirst(userNBytes[userNBytes.length - i - 1]);
+                    }
+                    break;
+                }
+                // for every user
+                // ACK-Opcode LOGSTAT-Opcode/Stat-Opcode <Age> <NumPosts> <NumFollowers> <NumFollowing>
+                case 7: case 8: {
+                    // go over each line
+                    for(int i=0; i<commandSplit.length;i+=6) {
+                        // create byte array with all of the details of a single user
+                        String[] userStatLine = {commandSplit[i],commandSplit[i+1],commandSplit[i+2],commandSplit[i+3],commandSplit[i+4],commandSplit[i+5]};
+                        byte[] userStatBytes = USLToBytes(userStatLine);
+                        // add all user details (all short values, 2 bytes per detail)
+                        for(int j=0;j<userStatBytes.length;j+=2) {
+                            // insert in Big Endian
+                            B.addFirst(userStatBytes[j]);
+                            B.addFirst(userStatBytes[j+1]);
+                        }
+                    }
+                }
+            }
+
+        }
+        return Convertor.linkedListToByteArray(B);
     }
+
+    /**
+     * @inv
+     * @param userStatLine - String array include ack of user stats (LOGSTAT and STAT options)
+     * @return byte array ~ 10 + 'MessageOPCodeAsShort' + 'NumPosts' + 'NUMFollowers' + 'NumFollowing'
+     * */
+    public byte[] USLToBytes(String[] userStatLine){
+        int numOfDetails = userStatLine.length;
+        // 2 bytes for each 'short'
+        byte[] userStatBytes = new byte[numOfDetails*2];
+
+        // byte[] for each detail
+        byte[] ackOpCodeB = Convertor.shortToBytes(Short.valueOf(userStatLine[0]));
+        byte[] messageOpCodeB = Convertor.shortToBytes(Short.valueOf(userStatLine[1]));
+        byte[] ageB = Convertor.shortToBytes(Short.valueOf(userStatLine[2]));
+        byte[] numPostsB = Convertor.shortToBytes(Short.valueOf(userStatLine[3]));
+        byte[] numFollowersB = Convertor.shortToBytes(Short.valueOf(userStatLine[4]));
+        byte[] numFollowingB = Convertor.shortToBytes(Short.valueOf(userStatLine[5]));
+
+        // merge all byte arrays to a single byteArray
+        byte[][] bytesLists = {ackOpCodeB,messageOpCodeB,ageB,numPostsB,numFollowersB,numFollowingB};
+        int cellCounter = 0;
+        for(int i=0; i<bytesLists.length; i++) {
+            for(int j=0; j<bytesLists[i].length; j++) {
+                userStatBytes[cellCounter] = bytesLists[i][j];
+                cellCounter++;
+            }
+        }
+
+        return userStatBytes;
+    }
+
+
     /**
      * @inv command  ~ "ERROR"_"ErroredMessageOpcode"
      * @param command satisfies @inv
