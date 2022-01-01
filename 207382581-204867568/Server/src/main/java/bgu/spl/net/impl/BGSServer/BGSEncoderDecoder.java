@@ -154,7 +154,11 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         return Convertor.linkedListToByteArray(ans);
     }
 
-
+    /**
+     * @inv command = "ACK MessageOpCode optionalInformation"
+     * @param command ACK meant to be converted to bytes and sent to client
+     * @return byte[] representing command in BigEndian
+    * */
     public byte[] ackToBytes(String command){
         // use linked List and convert to byte[] at the end
         LinkedList<Byte> B = new LinkedList<>();
@@ -202,6 +206,9 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
                         // create byte array with all of the details of a single user
                         String[] userStatLine = {commandSplit[i],commandSplit[i+1],commandSplit[i+2],commandSplit[i+3],commandSplit[i+4],commandSplit[i+5]};
                         byte[] userStatBytes = USLToBytes(userStatLine);
+                        //?????????????????????????????????????///
+                        // do we want to add '/n' for each line or will we add them on the Client side?
+                        //????????????????????????????????????//
                         // add all user details (all short values, 2 bytes per detail)
                         for(int j=0;j<userStatBytes.length;j+=2) {
                             // insert in Big Endian
@@ -217,7 +224,8 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
     }
 
     /**
-     * @inv
+     * @inv String[] userStatLine = {ackOpCode,messageOpCode,age,numPosts,NumFollowers,NumFollowing}
+     * @inv messageOpCode is of LOGSTAT or STAT
      * @param userStatLine - String array include ack of user stats (LOGSTAT and STAT options)
      * @return byte array ~ 10 + 'MessageOPCodeAsShort' + 'NumPosts' + 'NUMFollowers' + 'NumFollowing'
      * */
@@ -227,12 +235,12 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         byte[] userStatBytes = new byte[numOfDetails*2];
 
         // byte[] for each detail
-        byte[] ackOpCodeB = Convertor.shortToBytes(Short.valueOf(userStatLine[0]));
-        byte[] messageOpCodeB = Convertor.shortToBytes(Short.valueOf(userStatLine[1]));
-        byte[] ageB = Convertor.shortToBytes(Short.valueOf(userStatLine[2]));
-        byte[] numPostsB = Convertor.shortToBytes(Short.valueOf(userStatLine[3]));
-        byte[] numFollowersB = Convertor.shortToBytes(Short.valueOf(userStatLine[4]));
-        byte[] numFollowingB = Convertor.shortToBytes(Short.valueOf(userStatLine[5]));
+        byte[] ackOpCodeB = Convertor.shortToBytes(Short.parseShort(userStatLine[0]));
+        byte[] messageOpCodeB = Convertor.shortToBytes(Short.parseShort(userStatLine[1]));
+        byte[] ageB = Convertor.shortToBytes(Short.parseShort(userStatLine[2]));
+        byte[] numPostsB = Convertor.shortToBytes(Short.parseShort(userStatLine[3]));
+        byte[] numFollowersB = Convertor.shortToBytes(Short.parseShort(userStatLine[4]));
+        byte[] numFollowingB = Convertor.shortToBytes(Short.parseShort(userStatLine[5]));
 
         // merge all byte arrays to a single byteArray
         byte[][] bytesLists = {ackOpCodeB,messageOpCodeB,ageB,numPostsB,numFollowersB,numFollowingB};
