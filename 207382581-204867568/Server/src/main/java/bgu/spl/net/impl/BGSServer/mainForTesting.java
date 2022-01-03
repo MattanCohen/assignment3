@@ -35,12 +35,14 @@ public static void main(String[]args){
 //    testEncode(command);
 //    String command2="NOTIFICATION 1 ROI HOWAERYOU";  //desired answer: ";911"
 //    testEncode(command2);
+    String command3="ACK 2";  //desired answer: ";911"
+    testEncode(command3);
 
 //
-    String command="2Mattan023212377aA01;"; //desired answer:
-    StringBuilder flipper=new StringBuilder(command);
-    flipper.reverse();
-    testDecode(Convertor.stringToBytes(flipper.toString()));
+//    String command="2Mattan023212377aA01;"; //desired answer:
+//    StringBuilder flipper=new StringBuilder(command);
+//    flipper.reverse();
+//    testDecode(Convertor.stringToBytes(flipper.toString()));
 
 }
 
@@ -90,43 +92,8 @@ public static void main(String[]args){
         }
     }
     private static byte [] testNotificationToBytes(String command) {
-        LinkedList<Byte> ans = new LinkedList<Byte>();
-        //get opCode from the command
-        short opcode = Convertor.extractOpcodeAsShortFromString(command);
-        //remove opCode from command
-        command=Convertor.removeOpcodeFromString(command);
-        //push opcode to answer
-        ans.addFirst((byte)(opcode<<8));
-        ans.addFirst((byte) opcode);
-        //get either pm/public (0/1)
-        byte pmPublic = (byte) command.charAt(0);
-        //add pm or public to answer
-        ans.addFirst(pmPublic);
-        //the nextIndex we're checking from. right now: after PM/public
-        int nextIndex = command.indexOf(' ');
-        //remove (PM/public) 0/1 and the space after it from the command
-        command = command.substring(nextIndex + 1);
-        //get space after username (after removing pm/public)
-        nextIndex = command.indexOf(' ');
-        //get userName in bytes
-        byte[] postingUsername = Convertor.stringToBytes(command.substring(0, nextIndex));
-        //remove userName and space after it from command
-        command = command.substring(nextIndex + 1);
-        //now command only contains contentString.
-        //add username to list
-        for (byte b : postingUsername)
-            ans.addFirst(b);
-        //add 0 to inform end of string
-        ans.addFirst((byte) '0');
-        byte[] content = Convertor.stringToBytes(command);
-        //add content to list
-        for (byte b : content)
-            ans.addFirst(b);
-        //add 0 to inform end of string
-        ans.addFirst((byte) '0');
-        //add ; to inform end of message
-        ans.addFirst((byte) ';');
-        return Convertor.linkedListToByteArray(ans);
+        BGSEncoderDecoder prot=new BGSEncoderDecoder();
+        return prot.notificationToBytes(command);
     }
     public static void printNotificationTest(byte[] fromFunction){
         byte [] opCodeExtract={fromFunction[fromFunction.length-1],fromFunction[fromFunction.length-2]};
@@ -144,7 +111,8 @@ public static void main(String[]args){
      * @return
      */
     public static byte[] testAckToBytes(String command){
-        return null;
+        BGSEncoderDecoder prot=new BGSEncoderDecoder();
+        return prot.ackToBytes(command);
     }
 
     /**
@@ -154,25 +122,10 @@ public static void main(String[]args){
      *                      ;   +               x               +       11
      */
     public static byte[] testErrorToBytes(String command){
-        LinkedList<Byte> ans = new LinkedList<Byte>();
-        //get opCode from the command
-        short opcode = Convertor.extractOpcodeAsShortFromString(command);
-        //remove opCode from command
-        command=Convertor.removeOpcodeFromString(command);
-        //push opcode to answer
-        ans.addFirst((byte)(opcode<<8));
-        ans.addFirst((byte) opcode);
-        //now remaining string in "command" is the opCode of the failed command (the one that returned error)
-        short erroredOpCode=Convertor.extractOpcodeAsShortFromString(command);
-        //push opcode to answer
-        ans.addFirst((byte)(erroredOpCode<<8));
-        ans.addFirst((byte) erroredOpCode);
-        //add ; to inform end of message
-        ans.addFirst((byte) ';');
-        return Convertor.linkedListToByteArray(ans);
+        BGSEncoderDecoder prot=new BGSEncoderDecoder();
+        return prot.errorToBytes(command);
     }
     public static void printErrorTest(byte [] b){
-        System.out.println("Hey");
         LinkedList<Byte> toPrint=Convertor.byteArrayToLinkedList(b);
         //extract opCode from b
         byte[] opCodeArr= {toPrint.get(toPrint.size()-1),toPrint.get(toPrint.size()-2)};
