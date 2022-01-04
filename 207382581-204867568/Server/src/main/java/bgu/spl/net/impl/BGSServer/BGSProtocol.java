@@ -1,6 +1,7 @@
 package bgu.spl.net.impl.BGSServer;
 
-import bgu.spl.net.api.MessagingProtocol;
+import bgu.spl.net.api.bidi.BidiMessagingProtocol;
+import bgu.spl.net.api.bidi.Connections;
 
 /*
 Opcode Operation
@@ -17,7 +18,17 @@ Opcode Operation
 11 Error (ERROR)
 12 Block (BLOCK)
  */
-public class BGSProtocol implements MessagingProtocol{
+public class BGSProtocol implements BidiMessagingProtocol<String> {
+
+    int conId;
+    Connections<String > connections;
+
+    @Override
+    public void start(int connectionId, Connections<String> connections) {
+        conId=connectionId;
+        this.connections=connections;
+    }
+
     @Override
     public Object process(Object msg) {
         return null;

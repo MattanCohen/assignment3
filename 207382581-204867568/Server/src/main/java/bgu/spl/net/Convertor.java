@@ -36,6 +36,9 @@ public class Convertor {
      * @return string out of byteArr
      */
     public static String bytesToString (byte[] byteArr){
+//        byte zero='\n';
+//        byte[] zeroArr={zero};
+//        System.out.println("zero array to string:"+(new String(zeroArr, StandardCharsets.UTF_8))+"!");
         return new String(byteArr, StandardCharsets.UTF_8);
     }
     public static String bytesToString (LinkedList<Byte> byteArr){

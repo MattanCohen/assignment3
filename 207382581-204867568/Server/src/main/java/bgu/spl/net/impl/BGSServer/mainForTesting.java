@@ -29,20 +29,160 @@ public static void main(String[]args){
 //    testRemoveOpcodeFromString("LOGSTAT");
 
     // @inv command ~ "NOTIFICATION"_"0/1"_"postingUserString"_"contentString"
-    // @inv command ~ "ERROR"_"ErroredMessageOpCode"
-    // @inv command ~ "ACK"_"Optional"
-//    String command="ERROR NOTIFICATION";  //desired answer: ";911"
+//    String command="NOTIFICATION 1 ROI HOWAERYOU";  //desired answer: ";911"
 //    testEncode(command);
-//    String command2="NOTIFICATION 1 ROI HOWAERYOU";  //desired answer: ";911"
-//    testEncode(command2);
-    String command3="ACK 2";  //desired answer: ";911"
-    testEncode(command3);
 
+    // @inv command ~ "ERROR"_"ErroredMessageOpCode"
+//    String command2="ERROR NOTIFICATION";  //desired answer: ";911"
+//    testEncode(command2);
+
+    // @inv command ~ "ACK"_"Optional" or
+    // @inv command ~ "ACK"_"FollowOpcodeAsShort"_"Follow/UnfollowIndicator"_"UserName"
+//   String command3="ACK 8 47 1 2 0 ACK 8 23 2 4 8";  //desired answer: ";911"
+//    testEncode(command3);
+
+     //testDecode
+
+//test Follow
+//    LinkedList<Byte> followToConvert=new LinkedList<>();
+//    short followOp=4;
+//    followToConvert.add((byte)(followOp<<8));
+//    followToConvert.add((byte)(followOp));
+//    char follow='0';
+//    followToConvert.add((byte)follow);
+//    followToConvert.addLast((byte)'\0');
+//    String followUserName="Ronald McDonald's";
+//    for (byte b: Convertor.stringToBytes(followUserName))
+//        followToConvert.add(b);
+//    followToConvert.addLast((byte)'\0');
+//    testDecode(Convertor.linkedListToByteArray(followToConvert));
+
+//test UNFOLLOW
+//    LinkedList<Byte> unFollowToConvert=new LinkedList<>();
+//    short unFollowOp=4;
+//    unFollowToConvert.add((byte)(unFollowOp<<8));
+//    unFollowToConvert.add((byte)(unFollowOp));
+//    char unFollow='1';
+//    unFollowToConvert.add((byte)unFollow);
+//    unFollowToConvert.addLast((byte)'\0');
+//    String unFollowUserName="MattanKing1234";
+//    for (byte b: Convertor.stringToBytes(unFollowUserName))
+//        unFollowToConvert.add(b);
+//    unFollowToConvert.addLast((byte)'\0');
+//    testDecode(Convertor.linkedListToByteArray(unFollowToConvert));
+
+//test Block:
+//    LinkedList<Byte> blockToConvert=new LinkedList<>();
+//    short blockOp=12;
+//    blockToConvert.add((byte)(blockOp<<8));
+//    blockToConvert.add((byte)blockOp);
+//    String userName="Nir Ahla Gever hallas taazvoo oto BYEEEEEEEEEE";
+//    for (byte b: Convertor.stringToBytes(userName))
+//        blockToConvert.add(b);
+//    blockToConvert.addLast((byte)'\0');
+//    testDecode(Convertor.linkedListToByteArray(blockToConvert));
+
+//test LOGOUT:
+//    LinkedList<Byte> logoutToConvert=new LinkedList<>();
+//    short logoutOp=3;
+//    logoutToConvert.add((byte)(logoutOp<<8));
+//    logoutToConvert.add((byte)logoutOp);
+//    testDecode(Convertor.linkedListToByteArray(logoutToConvert));
+
+//test LOGSTAT:
+//    LinkedList<Byte> logstatToConvert=new LinkedList<>();
+//    short logstatOp=7;
+//    logstatToConvert.add((byte)(logstatOp<<8));
+//    logstatToConvert.add((byte)logstatOp);
+//    testDecode(Convertor.linkedListToByteArray(logstatToConvert));
+
+//test Stat
+//    LinkedList<Byte> statToConvert=new LinkedList<>();
+//    LinkedList<Byte> registerToConvert=new LinkedList<>();
+//    short registerOp=8;
+//    registerToConvert.add((byte)(registerOp<<8));
+//    registerToConvert.add((byte)registerOp);
+//    String statUserNames="Byonce|Rihana|PoorGirl";
+//    for (byte b: Convertor.stringToBytes(statUserNames))
+//        statToConvert.addLast(b);
+//    statToConvert.addLast((byte)'\0');
+//    testDecode(Convertor.linkedListToByteArray(statToConvert));
+
+//test Post
+//    LinkedList<Byte> postToConvert=new LinkedList<>();
+//    short postOp=5;
+//    postToConvert.add((byte)(postOp<<8));
+//    postToConvert.add((byte)(postOp));
+//    String postContent="Zevel Rezini Noder";
+//    for (byte b: Convertor.stringToBytes(postContent))
+//        postToConvert.add(b);
+//    postToConvert.add((byte)'\0');
 //
-//    String command="2Mattan023212377aA01;"; //desired answer:
-//    StringBuilder flipper=new StringBuilder(command);
-//    flipper.reverse();
-//    testDecode(Convertor.stringToBytes(flipper.toString()));
+//    testDecode(Convertor.linkedListToByteArray(postToConvert));
+
+
+//test LOGIN
+//    LinkedList<Byte> loginToConvert=new LinkedList<>();
+//    short loginOp=2;
+//    loginToConvert.add((byte)(loginOp<<8));
+//    loginToConvert.add((byte)(loginOp));
+//
+//    String loginUserName="MrPickles";
+//    for (byte b: Convertor.stringToBytes(loginUserName))
+//        loginToConvert.add(b);
+//    loginToConvert.add((byte)'\0');
+//
+//    String loginPassword="%%666%%";
+//    for (byte b: Convertor.stringToBytes(loginPassword))
+//        loginToConvert.add(b);
+//    loginToConvert.add((byte)'\0');
+//
+//    char loginCaptcha='1';
+//    loginToConvert.add((byte)loginCaptcha);
+//
+//    testDecode(Convertor.linkedListToByteArray(loginToConvert));
+
+//test PM
+//    LinkedList<Byte> pmToConvert=new LinkedList<>();
+//    short pmOp=6;
+//    pmToConvert.add((byte)(pmOp<<8));
+//    pmToConvert.add((byte)(pmOp));
+//
+//    String pmUserName="MattanKing15";
+//    for (byte b: Convertor.stringToBytes(pmUserName))
+//        pmToConvert.add(b);
+//    pmToConvert.add((byte)'\0');
+//
+//    String pmContent="hey ani mekave she ata pseder";
+//    for (byte b: Convertor.stringToBytes(pmContent))
+//        pmToConvert.add(b);
+//    pmToConvert.add((byte)'\0');
+//
+//    String pmTime="15/04/2022";
+//    for (byte b: Convertor.stringToBytes(pmTime))
+//        pmToConvert.add(b);
+//    pmToConvert.add((byte)'\0');
+//
+//    testDecode(Convertor.linkedListToByteArray(pmToConvert));
+
+//test Register
+//    LinkedList<Byte> registerToConvert=new LinkedList<>();
+//    short registerOp=1;
+//    registerToConvert.add((byte)(registerOp<<8));
+//    registerToConvert.add((byte)registerOp);
+//    String username="babydeathmetal";
+//    for(byte b: Convertor.stringToBytes(username))
+//        registerToConvert.add(b);
+//    registerToConvert.add((byte)'\0');
+//    String password ="666";
+//    for(byte b: Convertor.stringToBytes(password))
+//        registerToConvert.add(b);
+//    registerToConvert.add((byte)'\0');
+//    String birthday="16-6-1666";
+//    for (byte b: Convertor.stringToBytes(birthday))
+//        registerToConvert.add(b);
+//    registerToConvert.add((byte)'\0');
+//    testDecode(Convertor.linkedListToByteArray(registerToConvert));
 
 }
 
@@ -64,14 +204,22 @@ public static void main(String[]args){
     System.out.println("a byte array has been created from the function \"encode(original command)\" in *BGSEncoderDecoder class*.");
     System.out.println();
     System.out.println("array from function written in Bytes: ");
-    for (byte b: fromFunction)
+    System.out.print("[");
+    for (byte b: fromFunction){
         System.out.print(b);
+        System.out.print(',');
+    }
+    System.out.print("]");
     System.out.println();
+//    System.out.println("is found ack? "+(fromFunction[fromFunction.length-2]==(byte)(10)));
     System.out.println("array from function written in String: ");
     //if the second (BIG ENDIAN) byte is 9, print notification
     if ((char)(fromFunction[fromFunction.length-2])==(byte)(9))
         printNotificationTest(fromFunction);
-        //print error
+    //print ACK
+    else if (fromFunction[fromFunction.length-2]==(byte)(10))
+        printAckTest(fromFunction);
+    //print error
     else if (fromFunction[fromFunction.length-2]==(byte)(11))
         printErrorTest(fromFunction);
     System.out.println();
@@ -139,6 +287,20 @@ public static void main(String[]args){
         toPrint.removeLast();
         System.out.println(Convertor.bytesToString(toPrint)+""+erroredOpCode+""+opCode);
     }
+    public static void printAckTest(byte [] b){
+        LinkedList<Byte> toPrint=Convertor.byteArrayToLinkedList(b);
+        while (toPrint.size()>1){
+            //extract short from b
+            byte[] opCodeArr= {toPrint.get(toPrint.size()-1),toPrint.get(toPrint.size()-2)};
+            short opCode=Convertor.bytesToShort(opCodeArr);
+            toPrint.removeLast();
+            toPrint.removeLast();
+            //extract errored message opCode from b
+            System.out.print(opCode);
+        }
+        System.out.println(Convertor.bytesToString(Convertor.linkedListToByteArray(toPrint)));
+    }
+
 
     /**
      *
@@ -146,30 +308,32 @@ public static void main(String[]args){
      */
     private static void testDecode(byte[] bytes){
         System.out.println("----------------------testDecode--------------------------");
-        System.out.println("Original command in bytes: "+bytes);
-        System.out.println("Original command in raw String: "+Convertor.bytesToString(bytes));
-        String command=testTranslateBytes(bytes);
-        System.out.println("Flipped command in String: "+command);
+        System.out.println("Original command in ugly bytes: ");
+        LinkedList<Byte> toPrint=Convertor.byteArrayToLinkedList(bytes);
+        System.out.print("[");
+        while (toPrint.size()>1){
+            System.out.print(toPrint.removeLast()+",");
+        }
+        System.out.print("]");
+        System.out.println();
 
-        //get the opCode of the message
-        short shortOpCode=Convertor.stringAsBytesToOpcode(command.toString().substring(0,1));
-        String opCode=Convertor.opcodeToString(shortOpCode);
-
-        System.out.println("OPcode of the message: "+'\n'+
-                '\t'+   '\t'+"as String- "+opCode+'\n'+
-                '\t'+   '\t'+"as Short- "+shortOpCode);
-
-
+        //-----------from here the function is the same as in BGSEncoder Decoder
+        BGSEncoderDecoder encDec=new BGSEncoderDecoder();
+        String ans=encDec.decodeBytes(bytes);
+        //----------------------
+        System.out.println("Beautiful string for protocol: "+'\n'+ans);
+        System.out.println();
     }
-    private static String testTranslateBytes(byte[] bytes){
-        //make flippedCommand to be the message we ought to do ordered BIG ENDIAN
-        String flippedCommand=Convertor.bytesToString(bytes);
-        //save the command as ans and flip it
-        StringBuilder ans=new StringBuilder(flippedCommand);
-        ans.reverse();
-        //return reversed and translated bytes message as normal String
-        return ans.toString();
-    }
+
+//    private static String testTranslateBytes(byte[] bytes){
+//        //make flippedCommand to be the message we ought to do ordered BIG ENDIAN
+//        String flippedCommand=Convertor.bytesToString(bytes);
+//        //save the command as ans and flip it
+//        StringBuilder ans=new StringBuilder(flippedCommand);
+//        ans.reverse();
+//        //return reversed and translated bytes message as normal String
+//        return ans.toString();
+//    }
 
 
     /**
