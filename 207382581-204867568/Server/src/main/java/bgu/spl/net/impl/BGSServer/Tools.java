@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Tools {
     private static AtomicInteger conId=new AtomicInteger(0);
+    private static AtomicInteger messageId=new AtomicInteger(0);
 
     public static int getConId() {
         return conId.get();
@@ -20,6 +21,15 @@ public class Tools {
         }
     }
 
+    public static int getMessageId() {
+        return messageId.get();
+    }
 
+    public static int incrementAndGetMessageId(){return  messageId.incrementAndGet();}
 
+    public static void incrementMessageId(){
+        int f=messageId.get();
+        while (!messageId.compareAndSet(f,f+1))
+            f=messageId.get();
+    }
 }

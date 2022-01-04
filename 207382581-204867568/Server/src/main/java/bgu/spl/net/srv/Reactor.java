@@ -5,6 +5,7 @@ import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.bidi.BidiMessagingProtocol;
 import bgu.spl.net.api.bidi.Connections;
 import bgu.spl.net.impl.BGSServer.Tools;
+import bgu.spl.net.srv.bidi.ConnectionHandler;
 
 import javax.tools.Tool;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
 
@@ -26,8 +28,9 @@ public class Reactor<T> implements Server<T> {
     private final ActorThreadPool pool;
     private Selector selector;
 
-    private HashMap<Integer,NonBlockingConnectionHandler> handlers;
-    Connections<String> serverActiveConnections;
+//    private HashMap<Integer,NonBlockingConnectionHandler> handlers;
+
+    Connections<T> serverActiveConnections;
 
     private Thread selectorThread;
     private final ConcurrentLinkedQueue<Runnable> selectorTasks = new ConcurrentLinkedQueue<>();
@@ -36,51 +39,15 @@ public class Reactor<T> implements Server<T> {
             int numThreads,
             int port,
             Supplier<MessagingProtocol<T>> protocolFactory,
-            Supplier<MessageEncoderDecoder<T>> readerFactory) {
+            Supplier<MessageEncoderDecoder<T>> readerFactory,
+            Connections<T> serverActiveConnections) {
 
         this.pool = new ActorThreadPool(numThreads);
         this.port = port;
         this.protocolFactory = protocolFactory;
         this.readerFactory = readerFactory;
 
-
-        serverActiveConnections =new Connections<String>() {
-            /**
-             * when server wants to send a message it has to be notification/ack/error
-             * use handler.send for it basically
-             *
-             * @param connectionId the conId to send the message to
-             * @param msg the beautiful message from protocol to send to client
-             * @return true if succeed
-             */
-            @Override
-            public boolean send(int connectionId, String msg) {
-                return false;
-            }
-
-            /**
-             * when server wants to broadcast it broadcasts to all active (logged in) clients.
-             * use handler.send for all clients basically
-             *
-             * @param msg message to send to all active users
-             */
-            @Override
-            public void broadcast(String msg) {
-
-            }
-
-            /**
-             * used to disconect connectionId from active connections
-             *
-              * @param connectionId server's conId
-             */
-            @Override
-            public void disconnect(int connectionId) {
-
-            }
-        };
-
-
+        this.serverActiveConnections =serverActiveConnections;
     }
 
     @Override
@@ -152,21 +119,21 @@ public class Reactor<T> implements Server<T> {
         //add handler to connections:
         //increment and get conId for new handler
         int conId= Tools.incrementAndGetConId();
+
         //add new handler to handlers
-        handlers.put(conId,handler);
+//        handlers.put(conId,handler);
+
         //give handler's protocol connections and conId
         handler.getProtocol().start(conId, (Connections<T>) serverActiveConnections);
+        clientChan.register(selector, SelectionKey.OP_READ, handler);
 
-        //increment conId
-        Tools.incrementConId();
 
         //                      IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!
 //        handler.send();
-        clientChan.register(selector, SelectionKey.OP_WRITE, handler);
     }
 
     private void handleReadWrite(SelectionKey key) {
-        @SuppressWarnings("unchecked")
+//        @SuppressWarnings("unchecked")
         NonBlockingConnectionHandler<T> handler = (NonBlockingConnectionHandler<T>) key.attachment();
 
         if (key.isReadable()) {

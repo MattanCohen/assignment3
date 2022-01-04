@@ -2,6 +2,7 @@ package bgu.spl.net.impl.BGSServer;
 
 import bgu.spl.net.api.bidi.BidiMessagingProtocol;
 import bgu.spl.net.api.bidi.Connections;
+import bgu.spl.net.srv.bidi.ConnectionHandler;
 
 /*
 Opcode Operation
@@ -21,21 +22,39 @@ Opcode Operation
 public class BGSProtocol implements BidiMessagingProtocol<String> {
 
     int conId;
-    Connections<String > connections;
+    Connections<String > allClientsServerConnections;
+    private boolean shouldTerminate = false;
 
+    /**
+     * upon receiving register, make protocol
+     * @param connectionId
+     * @param connections
+     */
     @Override
     public void start(int connectionId, Connections<String> connections) {
         conId=connectionId;
-        this.connections=connections;
+        this.allClientsServerConnections=connections;
     }
 
+
+    // if msg is "login" and user wasn't logged in (check via connections), add it to connections with conId.incrementAndGet
+    // if msg is register, connections.register
     @Override
     public Object process(Object msg) {
         return null;
     }
 
+    public void terminate(){
+        try{
+            allClientsServerConnections.disconnect(conId);
+
+        }finally {
+            shouldTerminate=true;
+        }
+    }
+
     @Override
     public boolean shouldTerminate() {
-        return false;
+        return shouldTerminate;
     }
 }

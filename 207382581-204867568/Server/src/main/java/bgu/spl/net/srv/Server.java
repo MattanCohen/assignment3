@@ -2,6 +2,8 @@ package bgu.spl.net.srv;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.MessagingProtocol;
+import bgu.spl.net.api.bidi.Connections;
+
 import java.io.Closeable;
 import java.util.function.Supplier;
 
@@ -47,8 +49,9 @@ public interface Server<T> extends Closeable {
             int nthreads,
             int port,
             Supplier<MessagingProtocol<T>> protocolFactory,
-            Supplier<MessageEncoderDecoder<T>> encoderDecoderFactory) {
-        return new Reactor<T>(nthreads, port, protocolFactory, encoderDecoderFactory);
+            Supplier<MessageEncoderDecoder<T>> encoderDecoderFactory,
+            Connections<T> connections) {
+        return new Reactor<T>(nthreads, port, protocolFactory, encoderDecoderFactory,connections);
     }
 
 }
