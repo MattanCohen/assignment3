@@ -9,11 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BGSConnections implements Connections<String> {
 
     // map handler to userName
-    ConcurrentHashMap <Integer, ConnectionHandler<String>> registeredUsersToHandlers;
+    ConcurrentHashMap <String, ConnectionHandler<String>> registeredUsers;
     // map logged on userNames to conId
     ConcurrentHashMap <Integer , String> loggedOnUsers;
+
     // map information to userName
-    ConcurrentHashMap <Integer, BGSClientInformation> usersInformation;
+    ConcurrentHashMap <String, BGSClientInformation> usersInformation;
 
     int messageId;
     // map messages to messages id posted by handler (pm or post)
@@ -25,7 +26,7 @@ public class BGSConnections implements Connections<String> {
     /**
      * send is used by the connection handler.
      * when a connection handler wants to send a message to another client, we will have to check
-     * if the other client is following the handler (that is sending).
+     * if the other client is following the handler (that is sending) and isn't blocked (by the one to send).
      *
      * @param connectionId - the user IO in connections to send to
      * @param msg - the message we want to transfer (returned beautifully from protocol)
@@ -82,11 +83,11 @@ public class BGSConnections implements Connections<String> {
      * @retyrn false   otherwise
      */
     public boolean registerUser(Integer conid, String userName, String password, String birthday, ConnectionHandler<String> handler){
-        if (registeredUsersToHandlers.get(conid)!=null)
+        if (registeredUsers.get(conid)!=null)
             return false;
         BGSClientInformation info=new BGSClientInformation(userName,password,birthday);
-        registeredUsersToHandlers.put(conid,handler);
-        usersInformation.put(conid,info);
+        registeredUsers.put(userName,handler);
+        usersInformation.put(userName,info);
         return true;
     }
 
@@ -106,7 +107,7 @@ public class BGSConnections implements Connections<String> {
      */
     public boolean logIn(Integer conId,String username, String password, int captcha){
         // user doesn't exist
-        if(registeredUsersToHandlers.get(conId)==null) {
+        if(registeredUsers.get(conId)==null) {
             return false; }
         // user already logged in
         if (loggedOnUsers.get(conId)!=null) {
@@ -130,12 +131,59 @@ public class BGSConnections implements Connections<String> {
      * @return true if loggedout false otherwise
      */
     public boolean logOut(Integer conId){
-        if (registeredUsersToHandlers.get(conId)==null || loggedOnUsers.get(conId)==null)
+        if (registeredUsers.get(conId)==null || loggedOnUsers.get(conId)==null)
             return  false;
         disconnect(conId);
         return true;
     }
 
 
+    public ConcurrentHashMap<String, BGSClientInformation> getUsersInformation() {
+        return usersInformation;
+    }
 
+    public BGSClientInformation getUserInformation(Integer conId) {
+        BGSClientInformation b=new BGSClientInformation("","","");
+        try{
+            b=usersInformation.get(conId);
+        } catch (Exception e){System.out.println(e.getMessage());}
+        finally {
+            return b;
+        }
+    }
+
+    public ConcurrentHashMap<Integer, String> getLoggedOnUsers() {
+        return loggedOnUsers;
+    }
+
+    public boolean isLogged(Integer conId){
+        boolean b=false;
+        try{
+            b=loggedOnUsers.get(conId)!=null;
+        } catch (Exception e){System.out.println(e.getMessage());}
+        finally {
+            return b;
+        }
+    }
+
+    public ConcurrentHashMap<String, ConnectionHandler<String>> getRegisteredUsers() {
+        return registeredUsers;
+    }
+
+    /**
+     * receives the name of the conId handler if logged on, or null if isn't logged on or doesn't exist
+     *
+     * @param conId connection ID to get username
+     * @return username of conId or null if isn't logged on
+     */
+    public String conIdToUsername(int conId) {
+        String s = "";
+        try {
+            s = loggedOnUsers.get(conId);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            return s;
+        }
+    }
 }

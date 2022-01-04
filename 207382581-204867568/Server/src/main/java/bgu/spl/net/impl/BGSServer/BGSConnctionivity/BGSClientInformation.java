@@ -1,10 +1,12 @@
 package bgu.spl.net.impl.BGSServer.BGSConnctionivity;
 
 import bgu.spl.net.srv.bidi.ConnectionHandler;
+import org.graalvm.compiler.lir.aarch64.AArch64AtomicMove;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BGSClientInformation {
 
@@ -17,6 +19,11 @@ public class BGSClientInformation {
     // users that got blocked by handler
     ConcurrentLinkedDeque<String> blockedList;
 
+    //
+    AtomicInteger numOfPosts=new AtomicInteger(0);
+    AtomicInteger numOfFollows= new AtomicInteger(0);
+
+    public void incrementNumOfPosts(){numOfPosts.incrementAndGet();}
 
     public BGSClientInformation (String userName,
                                  String password,
@@ -61,6 +68,10 @@ public class BGSClientInformation {
         return true;
     }
 
+    public boolean follows(String toFollow){
+        return (followingList.contains(toFollow));
+    }
+
     /**
      * @return if user is already blocked return false
      * */
@@ -70,4 +81,24 @@ public class BGSClientInformation {
         }
     }
 
+
+    public boolean blocked (String toFollow){
+        return (blockedList.contains(toFollow));
+    }
+
+    public ConcurrentLinkedDeque<String> getBlockedList() {
+        return blockedList;
+    }
+
+    public ConcurrentLinkedDeque<String> getFollowingList() {
+        return followingList;
+    }
+
+    public AtomicInteger getNumOfFollows() {
+        return numOfFollows;
+    }
+
+    public AtomicInteger getNumOfPosts() {
+        return numOfPosts;
+    }
 }

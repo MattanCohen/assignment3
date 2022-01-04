@@ -2,8 +2,6 @@ package bgu.spl.net.impl.BGSServer;
 
 import bgu.spl.net.Convertor;
 
-import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 public class mainForTesting {
@@ -184,6 +182,9 @@ public static void main(String[]args){
 //    registerToConvert.add((byte)'\0');
 //    testDecode(Convertor.linkedListToByteArray(registerToConvert));
 
+//test post in BGSprotocol
+    String command7="POST heyimyourmom";
+    testBGSProtocol(command7.split(" "));
 }
 
 
@@ -377,4 +378,21 @@ public static void main(String[]args){
     }
 
 
+    /**
+     * BGSProtocolTests
+     */
+    public static void testBGSProtocol(String[] msg){
+        System.out.println("----------------------testBGSProtocol--------------------------");
+        System.out.println("             ---------test "+msg[0]+"---------");
+        System.out.println("original message in array: "+msg);
+        String originalCommand="";
+        for (String s: msg){
+            originalCommand+=s+" ";
+        }
+        System.out.println("original message in String: "+originalCommand);
+        Object ans= (new BGSProtocol()).process(msg);
+        System.out.println();
+        System.out.println("response from protocol: "+(String)ans);
+        System.out.println();
+    }
 }
