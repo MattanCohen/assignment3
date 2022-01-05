@@ -112,6 +112,26 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
             }
             case("LOGSTAT"): {
                 // complete logstat
+                String ans="";
+                LinkedList<BGSClientInformation> clientsInfo = new LinkedList<>();
+
+                // iterate over connectionId's of logged on users
+                for(int connectId:allClientsServerConnections.getLoggedOnUsers().keySet()){
+                    // get information of client
+                    BGSClientInformation cInfo = allClientsServerConnections.getUserInformation(connectId);
+                    // client didn't block this user so it can be added
+                    if(!cInfo.getBlockedList().contains(userName)){
+                        clientsInfo.add(cInfo);
+                    }
+                }
+                // create string with details
+                for(BGSClientInformation cInfo:clientsInfo){
+                    ans+=createStatRow(cInfo,message[0])+" ";
+                }
+                // cut last char which is a space
+                ans = ans.substring(0,ans.length()-1);
+
+                return ans;
             }
 
         }
