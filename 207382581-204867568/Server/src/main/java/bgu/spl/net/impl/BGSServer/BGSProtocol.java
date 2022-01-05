@@ -54,6 +54,9 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
             userName=allClientsServerConnections.conIdToUsername(conId);
         }catch (NullPointerException n){ userName=null; /* supposed to be null in login or register*/}
         switch (message[0]){
+            case("LOGIN"):{}
+            case("LOGOUT"):{}
+            case("FOLLOW"):{}
             case ("POST"):{
                 error+="POST";
                 /*check for validating
@@ -91,25 +94,7 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
 
                 return content;
             }
-
-            case ("STAT"):{
-                String ans="";
-                LinkedList<BGSClientInformation> clientsInfo = new LinkedList<>();
-               for(BGSClientInformation cInfo:allClientsServerConnections.getUsersInformation().values()){
-                   // client didn't block this user so it can be added
-                   if(!cInfo.getBlockedList().contains(userName)){
-                       clientsInfo.add(cInfo);
-                   }
-               }
-                // create string with details
-                for(BGSClientInformation cInfo:clientsInfo){
-                    ans+=createStatRow(cInfo,message[0])+" ";
-                }
-                // cut last char which is a space
-                ans = ans.substring(0,ans.length()-1);
-
-                return ans;
-            }
+            case("PM"):{}
             case("LOGSTAT"): {
                 // complete logstat
                 String ans="";
@@ -133,6 +118,26 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
 
                 return ans;
             }
+            case ("STAT"):{
+                String ans="";
+                LinkedList<BGSClientInformation> clientsInfo = new LinkedList<>();
+               for(BGSClientInformation cInfo:allClientsServerConnections.getUsersInformation().values()){
+                   // client didn't block this user so it can be added
+                   if(!cInfo.getBlockedList().contains(userName)){
+                       clientsInfo.add(cInfo);
+                   }
+               }
+                // create string with details
+                for(BGSClientInformation cInfo:clientsInfo){
+                    ans+=createStatRow(cInfo,message[0])+" ";
+                }
+                // cut last char which is a space
+                ans = ans.substring(0,ans.length()-1);
+
+                return ans;
+            }
+            case("BLOCK"):{}
+
 
         }
         return " ACK OR ERROR OR NOTIFICATION ";
