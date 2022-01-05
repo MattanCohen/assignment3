@@ -65,6 +65,9 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
                 if (!allClientsServerConnections.isLogged(conId))
                     return error;
 
+                // update numOfPosts for current user
+                allClientsServerConnections.getUserInformation(conId).incrementNumOfPosts();
+
                 //after decoding string is beautiful so message[1:len-1] is content
                 String content="";
                 LinkedList<String> usersToSendTo=new LinkedList<>();
@@ -91,7 +94,6 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
                     // add to contant word i
                     content+=message[i];
                 }
-
                 return content;
             }
             case("PM"):{}
