@@ -162,14 +162,15 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
 
     /**
      * extract from BGSClientInformation data and create a row with the following foramt:
-     * ACK STAT/LOGSTAT-opCode numPosts numFollows numFollowing
+     * ACK STAT/LOGSTAT-opCode age numPosts numFollows numFollowing
      * */
     public String createStatRow(BGSClientInformation cInfo, String opCodeString){
         String messageOpCode = String.valueOf(Convertor.extractOpcodeAsShortFromString(opCodeString));
+        String age = String.valueOf(Tools.calculateAge(cInfo.getBirthday()));
         String numPosts = String.valueOf(cInfo.getNumOfPosts().get());
         String numFollows = String.valueOf(cInfo.getNumOfFollows().get());
         String numFollowing= String.valueOf(cInfo.getFollowingList().size());
-        return "ACK "+messageOpCode+" "+numPosts+" "+numFollows+" "+numFollowing;
+        return "ACK "+messageOpCode+" "+age+" "+numPosts+" "+numFollows+" "+numFollowing;
     }
 
 

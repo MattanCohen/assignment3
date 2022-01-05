@@ -1,5 +1,5 @@
 package bgu.spl.net.impl.BGSServer;
-
+import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Tools {
@@ -31,5 +31,16 @@ public class Tools {
         int f=messageId.get();
         while (!messageId.compareAndSet(f,f+1))
             f=messageId.get();
+    }
+
+    /**
+     * get birthday in format DD-MM-YYYY and return age
+     * */
+    public static int calculateAge(String birthday){
+        //DD-MM-YYYY
+        int birthdayYear = Integer.valueOf(birthday.split("-")[2]);
+        Calendar now = Calendar.getInstance();
+        int currentYear = now.get(Calendar.YEAR);
+        return currentYear-birthdayYear;
     }
 }
