@@ -191,11 +191,11 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         return opCodeString+" "+userName+" "+password+" "+birthday;
     }
 
-    public String handleFollow(String opCode,LinkedList<Byte> bytes){
+    public String handleFollow(String opCodeString,LinkedList<Byte> bytes){
         //get if it's follow or unfollow
         String followUnfollow="";
         char followUnfollowC=(char)((byte)bytes.removeFirst());
-        System.out.println("followUnfollowChar "+followUnfollowC);
+        //System.out.println("followUnfollowChar "+followUnfollowC);
         switch (followUnfollowC){
             case '0':
                 followUnfollow="0";
@@ -208,7 +208,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         //get userName
         String userName=Convertor.bytesToString(bytes);
         System.out.println("userName "+userName);
-        return opCode+" "+followUnfollow+" "+userName;
+        return opCodeString+" "+followUnfollow+" "+userName;
     }
 
     public String handlePm(String opCode,LinkedList<Byte> bytes){
@@ -388,7 +388,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         // Additional information based on messageOpCode
         else {
             switch (messageOpCode) {
-                // ACK-Opcode FOLLOW-OpCODE Follow/Unfollow <username>
+                // ACK FOLLOW-OpCODE Follow/Unfollow <username>
                 case 4:{
                     B.addFirst((byte)(ackOpCode<<8));
                     B.addFirst((byte)(ackOpCode));

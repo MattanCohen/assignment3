@@ -79,11 +79,11 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
                         T nextMessage = encdec.decodeNextByte(buf.get());
                         if (nextMessage != null) {
                             //since protocol is now bidi protocol
-                            T  response =(T) protocol.process(nextMessage);
-                            if (response != null) {
-                                writeQueue.add(ByteBuffer.wrap(encdec.encode(response)));
-                                reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-                            }
+                            protocol.process(nextMessage);
+//                            if (response != null) {
+//                                writeQueue.add(ByteBuffer.wrap(encdec.encode(response)));
+//                                reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+//                            }
 
                         }
                     }
@@ -99,11 +99,13 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
 
     }
 
+    //
+
     public void close() {
         try {
             chan.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println("exception in close in NoneBlockingConnectionHandler "+ex.getMessage());
         }
     }
 
@@ -130,7 +132,7 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
                     writeQueue.remove();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                System.out.println("exception in continue write in NoneBlockingConnectionHandler "+ex.getMessage());
                 close();
             }
         }
@@ -164,16 +166,23 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
      * */
     @Override
     public void send(T msg) {
-        // hook the socket
-        try (Socket sock = this.chan.socket()) {
-            //get socket's output stream
-            BufferedOutputStream out = new BufferedOutputStream(sock.getOutputStream());
-            //write the encoded msg to the client
-            out.write(encdec.encode(msg));
-            //flush it so the client receives it instantly
-            out.flush();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        writeQueue.add(ByteBuffer.wrap(encdec.encode(msg)));
+        reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     }
+
 }
+
+
+
+//         hook the socket
+//        try (Socket sock = this.chan.socket()) {
+//            get socket's output stream
+//            BufferedOutputStream out = new BufferedOutputStream(sock.getOutputStream());
+//            write the encoded msg to the client
+//            out.write(encdec.encode(msg));
+//            flush it so the client receives it instantly
+//            out.flush();
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
+//    }

@@ -1,10 +1,5 @@
 package bgu.spl.net.impl.BGSServer.BGSConnctionivity;
 
-import bgu.spl.net.srv.bidi.ConnectionHandler;
-import org.graalvm.compiler.lir.aarch64.AArch64AtomicMove;
-
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -14,16 +9,21 @@ public class BGSClientInformation {
     String password;
     String birthday;
 
-    // userNames that handler is following
-    ConcurrentLinkedDeque<String> followingList;
+    // userNames follow this handler
+    ConcurrentLinkedDeque<String> followersList;
     // users that got blocked by handler
     ConcurrentLinkedDeque<String> blockedList;
 
-    //
+    // number of sent posts
     AtomicInteger numOfPosts=new AtomicInteger(0);
+    // number of users following
     AtomicInteger numOfFollows= new AtomicInteger(0);
 
     public void incrementNumOfPosts(){numOfPosts.incrementAndGet();}
+
+    public void incrementNumOfFollows(){numOfFollows.incrementAndGet();}
+
+    public void decrementNumOfFollows(){numOfFollows.decrementAndGet();}
 
     public BGSClientInformation (String userName,
                                  String password,
@@ -32,7 +32,7 @@ public class BGSClientInformation {
         this.password=password;
         this.birthday=birthday;
 
-        followingList=new ConcurrentLinkedDeque<String>();
+        followersList =new ConcurrentLinkedDeque<String>();
         blockedList=new ConcurrentLinkedDeque<String>();
     }
 
@@ -53,23 +53,23 @@ public class BGSClientInformation {
      * @return if user is already followed return false
      * */
     public boolean addFollow(String toFollow){
-        if (followingList.contains(toFollow))
+        if (followersList.contains(toFollow))
             return false;
-        followingList.add(toFollow);
+        followersList.add(toFollow);
         return true;
     }
     /**
      * @return if user is not followed return false
      * */
     public boolean removeFollow(String toFollow){
-        if (!followingList.contains(toFollow))
+        if (!followersList.contains(toFollow))
             return false;
-        followingList.remove(toFollow);
+        followersList.remove(toFollow);
         return true;
     }
 
     public boolean follows(String toFollow){
-        return (followingList.contains(toFollow));
+        return (followersList.contains(toFollow));
     }
 
     /**
@@ -90,8 +90,8 @@ public class BGSClientInformation {
         return blockedList;
     }
 
-    public ConcurrentLinkedDeque<String> getFollowingList() {
-        return followingList;
+    public ConcurrentLinkedDeque<String> getFollowersList() {
+        return followersList;
     }
 
     public AtomicInteger getNumOfFollows() {

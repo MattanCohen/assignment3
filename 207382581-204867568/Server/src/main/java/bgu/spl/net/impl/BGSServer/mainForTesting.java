@@ -390,9 +390,9 @@ public static void main(String[]args){
             originalCommand+=s+" ";
         }
         System.out.println("original message in String: "+originalCommand);
-        Object ans= (new BGSProtocol()).process(msg);
-        System.out.println();
-        System.out.println("response from protocol: "+(String)ans);
+//        Object ans= (new BGSProtocol()).process(msg);
+//        System.out.println();
+//        System.out.println("response from protocol: "+(String)ans);
         System.out.println();
     }
 }

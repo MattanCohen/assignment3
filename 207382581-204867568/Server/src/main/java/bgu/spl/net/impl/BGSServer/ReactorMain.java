@@ -16,19 +16,15 @@ public class ReactorMain {
         String port=args[0];
         String NumOfThreads=args[1];
 
-        AtomicInteger conId= new AtomicInteger(1);
 
 
-
+        //                    BGSProtocol prot=new BGSProtocol();
+        //                    prot.start(Tools.incrementAndGetConId(),new BGSConnections ());
         Server.reactor(
-                Runtime.getRuntime().availableProcessors(),
-                7777, //port
-                () ->{
-//                    BGSProtocol prot=new BGSProtocol();
-//                    prot.start(Tools.incrementAndGetConId(),new BGSConnections ());
-                    return new BGSProtocol();
-                } , // the protocol factory
-                ()->new BGSEncoderDecoder(), //message encoder decoder factory
+                Integer.parseInt(NumOfThreads),//numOfThreads
+                Integer.parseInt(port),//port
+                BGSProtocol::new, // the protocol factory
+                BGSEncoderDecoder::new, //message encoder decoder factory
                 new BGSConnections ()).serve();
 
     }

@@ -11,10 +11,11 @@ import javax.tools.Tool;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.text.Bidi;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -23,13 +24,10 @@ import java.util.function.Supplier;
 public class Reactor<T> implements Server<T> {
 
     private final int port;
-    private final Supplier<MessagingProtocol<T>> protocolFactory;
-    private final Supplier<MessageEncoderDecoder<T>> readerFactory;
     private final ActorThreadPool pool;
+    private final Supplier<BidiMessagingProtocol<T>> protocolFactory;
+    private final Supplier<MessageEncoderDecoder<T>> readerFactory;
     private Selector selector;
-
-//    private HashMap<Integer,NonBlockingConnectionHandler> handlers;
-
     Connections<T> serverActiveConnections;
 
     private Thread selectorThread;
@@ -38,7 +36,7 @@ public class Reactor<T> implements Server<T> {
     public Reactor(
             int numThreads,
             int port,
-            Supplier<MessagingProtocol<T>> protocolFactory,
+            Supplier<BidiMessagingProtocol<T>> protocolFactory,
             Supplier<MessageEncoderDecoder<T>> readerFactory,
             Connections<T> serverActiveConnections) {
 
@@ -125,6 +123,8 @@ public class Reactor<T> implements Server<T> {
 
         //give handler's protocol connections and conId
         handler.getProtocol().start(conId, (Connections<T>) serverActiveConnections);
+        handler.getProtocol().addHandler(handler);
+
         clientChan.register(selector, SelectionKey.OP_READ, handler);
 
 

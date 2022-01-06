@@ -2,6 +2,7 @@ package bgu.spl.net.srv;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.MessagingProtocol;
+import bgu.spl.net.api.bidi.BidiMessagingProtocol;
 import bgu.spl.net.srv.bidi.ConnectionHandler;
 
 import java.io.BufferedInputStream;
@@ -11,14 +12,14 @@ import java.net.Socket;
 
 public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler<T> {
 
-    private final MessagingProtocol<T> protocol;
+    private final BidiMessagingProtocol<T> protocol;
     private final MessageEncoderDecoder<T> encdec;
     private final Socket sock;
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private volatile boolean connected = true;
 
-    public BlockingConnectionHandler(Socket sock, MessageEncoderDecoder<T> reader, MessagingProtocol<T> protocol) {
+    public BlockingConnectionHandler(Socket sock, MessageEncoderDecoder<T> reader, BidiMessagingProtocol<T> protocol) {
         this.sock = sock;
         this.encdec = reader;
         this.protocol = protocol;
@@ -35,12 +36,12 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
             while (!protocol.shouldTerminate() && connected && (read = in.read()) >= 0) {
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
-                    T response = protocol.process(nextMessage);
+                    protocol.process(nextMessage);
                     // when a connectionHandler is blocking, every message is a push notification
-                    if (response != null) {
-                        out.write(encdec.encode(response));
-                        out.flush();
-                    }
+//                    if (response != null) {
+//                        out.write(encdec.encode(response));
+//                        out.flush();
+//                    }
                 }
             }
 
@@ -51,9 +52,13 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         connected = false;
-        sock.close();
+        try {
+            sock.close();
+        } catch (IOException e) {
+            System.out.println("expection in close in BlockingConnectionHandler "+e.getMessage());
+        }
     }
 
     /**
@@ -64,14 +69,23 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
      */
     @Override
     public void send(T msg) {
-        try (Socket sock = this.sock) {
-            out = new BufferedOutputStream(sock.getOutputStream());
-            //write the encoded msg to the cliend
+        try {
             out.write(encdec.encode(msg));
-            //flush it so the client receives it instantly
             out.flush();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("exception in send in BlockingConnectionHandler "+e.getMessage());
+            close();
         }
     }
 }
+
+
+//        try (Socket sock = this.sock) {
+//            out = new BufferedOutputStream(sock.getOutputStream());
+//            //write the encoded msg to the cliend
+//            out.write(encdec.encode(msg));
+//            //flush it so the client receives it instantly
+//            out.flush();
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
