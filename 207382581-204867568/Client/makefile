@@ -1,17 +1,13 @@
 CFLAGS:=-c -Wall -Weffc++ -g -std=c++11 -Iinclude
 LDFLAGS:=-lboost_system
+all: BGSUserClient
+	g++ -o bin/FingerTowerInc bin/connectionHandler.o bin/BGSUserClient.o $(LDFLAGS)
+BGSUserClient: bin/connectionHandler.o bin/BGSUserClient.o
 
-all: EchoClient
-	g++ -o bin/echoExample bin/connectionHandler.o bin/echoClient.o $(LDFLAGS) 
-
-EchoClient: bin/connectionHandler.o bin/echoClient.o
-	
 bin/connectionHandler.o: src/connectionHandler.cpp
 	g++ $(CFLAGS) -o bin/connectionHandler.o src/connectionHandler.cpp
+bin/BGSUserClient.o: src/BGSUserClient.cpp
+	g++ $(CFLAGS) -o bin/BGSUserClient.o src/BGSUserClient.cpp
 
-bin/echoClient.o: src/echoClient.cpp
-	g++ $(CFLAGS) -o bin/echoClient.o src/echoClient.cpp
-	
 .PHONY: clean
 clean:
-	rm -f bin/*
