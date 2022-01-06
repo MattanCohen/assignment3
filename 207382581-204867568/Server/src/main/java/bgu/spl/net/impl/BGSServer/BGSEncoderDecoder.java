@@ -397,7 +397,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
 
                     // follow/unfollow
                     if(commandSplit[2]=="0"){
-                        B.addFirst((byte)'\0');
+                        B.addFirst((byte)'0');
                     }
                     else{
                         B.addFirst((byte)'1');
@@ -424,12 +424,15 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
                 // for every user
                 // ACK-Opcode LOGSTAT-Opcode/Stat-Opcode <Age> <NumPosts> <NumFollowers> <NumFollowing>
                 case 7: case 8: {
-                    // go over each line
+                    /* go over each line from start (ACK) to finish (NumFollowing). each line is a bitch and looks as such:
+                        (ACK_String) (7/8_short) (AGE_short) (NumPosts_short) (NumFollowers_short) (NumFollowing_short)
+                     */
                     for(int i=0; i<commandSplit.length;i+=6) {
                         // create byte array with all of the details of a single user
                         String[] userStatLine = {commandSplit[i],commandSplit[i+1],commandSplit[i+2],commandSplit[i+3],commandSplit[i+4],commandSplit[i+5]};
+                        // create Byte list of the bitch stats row to bytes
                         LinkedList<Byte> userStatBytes = USLToBytes(userStatLine);
-                        // insert bytes in reversed order
+                        // insert bytes in reversed order BIG ENDIAN
                         for(Byte b:userStatBytes) {
                             B.addFirst(b);
                         }
@@ -447,7 +450,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
     }
 
     /**
-     * @inv String[] userStatLine = {ackOpCode,messageOpCode,age,numPosts,NumFollowers,NumFollowing}
+     * @inv String[] userStatLine = {ACK,8/9,age,numPosts,NumFollowers,NumFollowing}
      * @inv messageOpCode is of LOGSTAT or STAT
      * @param userStatLine - String array include ack of user stats (LOGSTAT and STAT options)
      * @return byte linked list BIG ENDIAN ~ NumFollowing + NumFollowers + NumPosts + MessageOpCode + 10

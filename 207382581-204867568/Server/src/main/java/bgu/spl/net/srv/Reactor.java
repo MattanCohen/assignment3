@@ -28,7 +28,7 @@ public class Reactor<T> implements Server<T> {
     private final Supplier<BidiMessagingProtocol<T>> protocolFactory;
     private final Supplier<MessageEncoderDecoder<T>> readerFactory;
     private Selector selector;
-    Connections<T> serverActiveConnections;
+    private final Connections<T> serverActiveConnections;
 
     private Thread selectorThread;
     private final ConcurrentLinkedQueue<Runnable> selectorTasks = new ConcurrentLinkedQueue<>();

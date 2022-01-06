@@ -71,32 +71,38 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
                 handleRegister(message, userName, error);
             }
         }
-        switch (message[0]){
-            case("LOGOUT"):{
+        switch (message[0]) {
+            case ("LOGOUT"): {
                 handleLogout(message, userName, error);
             }
-            case("FOLLOW"): {
+            case ("FOLLOW"): {
                 handleFollow(message, userName, error);
             }
-            case ("POST"):{
-                handlePost(message,userName,error);
+            case ("POST"): {
+                handlePost(message, userName, error);
             }
-            case("PM"):{
+            case ("PM"): {
                 handlePM(message, userName, error);
             }
-            case("LOGSTAT"): {
-                handleLogStat(message,userName,error);
+            case ("LOGSTAT"): {
+                handleLogStat(message, userName, error);
             }
-            case ("STAT"):{
-                handleStat(message,userName,error);
+            case ("STAT"): {
+                handleStat(message, userName, error);
             }
-            case("BLOCK"):{
-                handleBlock(message,userName,error);
+            case ("BLOCK"): {
+                handleBlock(message, userName, error);
             }
+            // user already logged in, commands need to send error
+            case ("LOGIN"): {
+                bgsConnections.send(conId, error + "LOGIN");
 
+            }
+            case ("REGISTER"): {
+                bgsConnections.send(conId, error + "REGISTER");
+            }
 
         }
-        bgsConnections.send(conId," ACK OR ERROR OR NOTIFICATION ");
     }
 
     /**
@@ -108,6 +114,7 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
     private void handleRegister(String[] message, String userName, String error) {
         error += "REGISTER";
         try{
+            // if user is already registered
             if (!bgsConnections.registerUser(conId,userName,message[2],message[3],protocolHandler)){
                 bgsConnections.send(conId,error);
                 return;
@@ -346,7 +353,7 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
             // create string with details
             for (BGSClientInformation cInfo : clientsInfo) {
                 //                          message[1] = "LOGSTAT"
-                ACK += createStatRow(cInfo, message[1]) + " ";
+                ACK += createStatRow(cInfo, message[0]) + " ";
             }
         } finally {
             // cut last char which is a space
@@ -357,17 +364,17 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
     }
 
     /**
-     ************************************************************************************************************************
-     ************************************************************************************************************************
-     ************************************************************************************************************************
-                                                    FIX THE FUNCTION STAT!!!
-     ************************************************************************************************************************
-     ************************************************************************************************************************
-     ************************************************************************************************************************
      *
-     * @param message
+     * @param message - [STAT] [USERS_LIST] usersList seperated by the unique character '|'.
      * @param userName
      * @param error
+     *
+     * set ACK = ""
+     * set usersList = USERS_LIST - {blocked/}
+     * for each userToStat in usersList :
+     *                             - ACK += "ACK" + '8' + userToStat_age + userToStat_numOfPosts + userToStat_NumOfFollowers
+     *
+     * @post send ACK
      */
     public void handleStat(String[] message, String userName, String error){
         String ACK = "";
@@ -378,17 +385,25 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
                 return;
             }
 
-            // get all client information that aren't blocked
+            // save all the user's informations in USERS_LIST on message that aren't blocked by userName
             LinkedList<BGSClientInformation> clientsInfo = new LinkedList<>();
-            for (BGSClientInformation cInfo : bgsConnections.getUsersInformation().values()) {
-                // client didn't block this user so it can be added
-                if (!cInfo.blocked(userName)) {
-                    clientsInfo.add(cInfo);
+            // get from message the list of users seperated (split) by '|'
+            String [] usersList = message[1].split("|");
+            // for every said user
+            for (String userToStat : usersList){
+                if(bgsConnections.isRegistered(userToStat)){
+                    // get its information
+                    BGSClientInformation toStatInfo = bgsConnections.getUserInformation(userToStat);
+                    //if he didn't block userName
+                    if (!toStatInfo.blocked(userName))
+                        // add its information to clientsInfo
+                        clientsInfo.add(toStatInfo);
                 }
             }
-            // create string with details
+
+            // create string with details for each
             for (BGSClientInformation cInfo : clientsInfo) {
-                ACK += createStatRow(cInfo, message[1]) + " ";
+                ACK += createStatRow(cInfo, message[0]) + " ";
             }
         }
         finally {
@@ -485,7 +500,11 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
     /**
      * extract from BGSClientInformation data and create a row with the following foramt:
      * ACK STAT/LOGSTAT-opCode age numPosts numFollows numFollowing
-     * */
+     *
+     * @param cInfo - userToStat_BGSClientInformation
+     * @param opCodeString - "7" (logStat) or "8" (stat)
+     * @return "ACK" + '8' + cInfo_age + cInfo_numOfPosts + cInfo_NumOfFollowers
+     */
     public String createStatRow(BGSClientInformation cInfo, String opCodeString) {
         String messageOpCode = String.valueOf(Convertor.extractOpcodeAsShortFromString(opCodeString));
         String age = String.valueOf(Tools.calculateAge(cInfo.getBirthday()));

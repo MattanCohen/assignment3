@@ -3,6 +3,7 @@ package bgu.spl.net.srv;
 import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.bidi.BidiMessagingProtocol;
+import bgu.spl.net.api.bidi.Connections;
 import bgu.spl.net.srv.bidi.ConnectionHandler;
 
 import java.io.BufferedInputStream;
@@ -18,11 +19,18 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     private BufferedInputStream in;
     private BufferedOutputStream out;
     private volatile boolean connected = true;
+    private final Connections<T> serverActiveConnections;
 
-    public BlockingConnectionHandler(Socket sock, MessageEncoderDecoder<T> reader, BidiMessagingProtocol<T> protocol) {
+
+    public BidiMessagingProtocol<T> getProtocol() {
+        return protocol;
+    }
+
+    public BlockingConnectionHandler(Socket sock, MessageEncoderDecoder<T> reader, BidiMessagingProtocol<T> protocol, Connections connections) {
         this.sock = sock;
         this.encdec = reader;
         this.protocol = protocol;
+        serverActiveConnections = connections;
     }
 
     @Override
@@ -37,11 +45,6 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
                     protocol.process(nextMessage);
-                    // when a connectionHandler is blocking, every message is a push notification
-//                    if (response != null) {
-//                        out.write(encdec.encode(response));
-//                        out.flush();
-//                    }
                 }
             }
 
@@ -55,6 +58,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     public void close() {
         connected = false;
         try {
+
             sock.close();
         } catch (IOException e) {
             System.out.println("expection in close in BlockingConnectionHandler "+e.getMessage());

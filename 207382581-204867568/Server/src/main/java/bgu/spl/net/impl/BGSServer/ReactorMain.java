@@ -13,13 +13,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ReactorMain {
 
     public static void main (String[]args){
+
         String port=args[0];
         String NumOfThreads=args[1];
 
 
-
-        //                    BGSProtocol prot=new BGSProtocol();
-        //                    prot.start(Tools.incrementAndGetConId(),new BGSConnections ());
         Server.reactor(
                 Integer.parseInt(NumOfThreads),//numOfThreads
                 Integer.parseInt(port),//port
@@ -27,6 +25,19 @@ public class ReactorMain {
                 BGSEncoderDecoder::new, //message encoder decoder factory
                 new BGSConnections ()).serve();
 
-    }
+   }
 
 }
+
+
+
+/*
+      //                    BGSProtocol prot=new BGSProtocol();
+        //                    prot.start(Tools.incrementAndGetConId(),new BGSConnections ());
+
+//        Server.threadPerClient(
+//                7777, //port
+//                () -> new RemoteCommandInvocationProtocol<>(feed), //protocol factory
+//                ObjectEncoderDecoder::new //message encoder decoder factory
+//        ).serve();
+ */
