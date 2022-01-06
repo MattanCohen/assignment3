@@ -1,20 +1,27 @@
-CFLAGS:=-c -Wall -Weffc++ -g -std=c++11 -Iinclude
-LDFLAGS:=-lboost_system -pthread
+CXX = g++
+CXXFLAGS = -c -Wall -Weffc++ -g -std=c++11
+CPPFLAGS = -I ./include -MMD -MP
+LDFLAGS := -lboost_system -lboost_thread -lpthread
 
-all: clean BGSUserClient ConnectionHandler
-	g++ -o bin/ConnectionHandler bin/connectionHandler.o $(LDFLAGS)
-	g++ -o bin/BGSUserClient bin/connectionHandler.o bin/BGSUserClient.o $(LDFLAGS)
+SRCS = $(wildcard ./src/*.cpp)
+OBJS = $(patsubst ./src/%.cpp,./bin/%.o, $(SRCS))
+DEPS := $(patsubst %.o,%.d, $(OBJS))
 
-BGSUserClient: bin/connectionHandler.o
+# default target
+all: clean ./bin/BGSClient
 
-ConnectionHandler: bin/connectionHandler.o bin/BGSUserClient.o
+# build studio
+./bin/BGSClient: $(OBJS)
+	@echo "Building ..."
+	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
+	@echo "Finished building"
 
-bin/connectionHandler.o: src/connectionHandler.cpp
-	g++ $(CFLAGS) -o bin/connectionHandler.o src/connectionHandler.cpp
+# build cpp files
+./bin/%.o: ./src/%.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
-bin/BGSUserClient.o: src/BGSUserClient.cpp
-	g++ $(CFLAGS) -o bin/BGSUserClient.o src/BGSUserClient.cpp
-
-.PHONY: clean
+# clean build files
 clean:
-	rm -f bin/*
+	@rm -f ./bin/*
+
+-include $(DEPS)

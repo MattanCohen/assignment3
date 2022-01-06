@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "../include/connectionHandler.h"
 #include <iostream>
 #include <thread>
@@ -78,7 +77,6 @@ int main (int argc, char *argv[]) {
     short port = atoi(argv[2]);
 
     ConnectionHandler connectionHandler(host, port);
-    BGSUserClient client(host, port,connectionHandler);
 
     if (!connectionHandler.connect()) {
         std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
