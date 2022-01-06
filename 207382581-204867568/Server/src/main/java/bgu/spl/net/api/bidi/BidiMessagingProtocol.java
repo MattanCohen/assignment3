@@ -1,5 +1,6 @@
 package bgu.spl.net.api.bidi;
 
+import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.srv.bidi.ConnectionHandler;
 
 public interface BidiMessagingProtocol<T> {
@@ -15,5 +16,5 @@ public interface BidiMessagingProtocol<T> {
      */
     boolean shouldTerminate();
 
-    void addHandler(ConnectionHandler<T> handler);
+    void addHandler(ConnectionHandler handler);
 }
