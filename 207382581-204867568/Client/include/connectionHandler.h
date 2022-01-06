@@ -28,7 +28,7 @@ public:
 	// Send a fixed number of bytes from the client - blocking.
     // Returns false in case the connection is closed before all the data is sent.
     bool sendBytes(const char bytes[], int bytesToWrite);
-	
+
     // Read an ascii line from the server
     // Returns false in case connection closed before a newline can be read.
     bool getLine(std::string& line);

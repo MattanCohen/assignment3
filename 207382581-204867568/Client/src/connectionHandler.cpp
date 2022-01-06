@@ -9,15 +9,16 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
- 
+
 ConnectionHandler::ConnectionHandler(string host, short port): host_(host), port_(port), io_service_(), socket_(io_service_){}
-    
+
 ConnectionHandler::~ConnectionHandler() {
     close();
 }
- 
+
+    // Connect to the remote machine
 bool ConnectionHandler::connect() {
-    std::cout << "Starting connect to " 
+    std::cout << "Starting connect to "
         << host_ << ":" << port_ << std::endl;
     try {
 		tcp::endpoint endpoint(boost::asio::ip::address::from_string(host_), port_); // the server endpoint
@@ -32,13 +33,16 @@ bool ConnectionHandler::connect() {
     }
     return true;
 }
- 
+
+
+    // Read a fixed number of bytes from the server - blocking.
+    // Returns false in case the connection is closed before bytesToRead bytes can be read.
 bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
     size_t tmp = 0;
 	boost::system::error_code error;
     try {
         while (!error && bytesToRead > tmp ) {
-			tmp += socket_.read_some(boost::asio::buffer(bytes+tmp, bytesToRead-tmp), error);			
+			tmp += socket_.read_some(boost::asio::buffer(bytes+tmp, bytesToRead-tmp), error);
         }
 		if(error)
 			throw boost::system::system_error(error);
@@ -49,6 +53,8 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
     return true;
 }
 
+	// Send a fixed number of bytes from the client - blocking.
+    // Returns false in case the connection is closed before all the data is sent.
 bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     int tmp = 0;
 	boost::system::error_code error;
@@ -64,18 +70,38 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     }
     return true;
 }
- 
+
+
+
+// String msgToRead = ""
+// while ( getLine (msgToRead) != true ){}
+
+    // Read an ascii line from the server
+    // Returns false in case connection closed before a newline can be read.
 bool ConnectionHandler::getLine(std::string& line) {
     return getFrameAscii(line, '\n');
 }
 
+
+// String opCode = "9"
+// String opCode = "09"
+
+
+// String msgToRead = ""
+// while ( getFrameAscii( msgToRead.getBytes(UTF8) ,';') != true ){}
+
+	// Send an ascii line from the server
+    // Returns false in case connection closed before all the data is sent.
 bool ConnectionHandler::sendLine(std::string& line) {
     return sendFrameAscii(line, '\n');
 }
- 
+
+
+    // Get Ascii data from the server until the delimiter character
+    // Returns false in case connection closed before null can be read.
 bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
     char ch;
-    // Stop when we encounter the null character. 
+    // Stop when we encounter the null character.
     // Notice that the null character is not appended to the frame string.
     try {
 		do{
@@ -88,13 +114,16 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
     }
     return true;
 }
- 
+
+    // sendFramAscii ( MSG , ';' )
+    // Send a message to the remote host.
+    // Returns false in case connection is closed before all the data is sent.
 bool ConnectionHandler::sendFrameAscii(const std::string& frame, char delimiter) {
 	bool result=sendBytes(frame.c_str(),frame.length());
 	if(!result) return false;
 	return sendBytes(&delimiter,1);
 }
- 
+
 // Close down the connection properly.
 void ConnectionHandler::close() {
     try{
