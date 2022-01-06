@@ -1,10 +1,7 @@
 package bgu.spl.net.impl.BGSServer;
 
-import bgu.spl.net.Convertor;
 import bgu.spl.net.impl.BGSServer.BGSConnctionivity.BGSConnections;
 import bgu.spl.net.srv.Server;
-
-import java.util.LinkedList;
 
 public class TPCMain {
 

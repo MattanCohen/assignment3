@@ -1,6 +1,6 @@
 package bgu.spl.net.impl.BGSServer;
 
-import bgu.spl.net.Convertor;
+import bgu.spl.net.api.BIDI.Convertor;
 import bgu.spl.net.api.MessageEncoderDecoder;
 
 import java.util.Arrays;

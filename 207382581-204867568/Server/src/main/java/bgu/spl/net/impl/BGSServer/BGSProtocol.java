@@ -1,11 +1,11 @@
 package bgu.spl.net.impl.BGSServer;
 
-import bgu.spl.net.Convertor;
-import bgu.spl.net.api.bidi.BidiMessagingProtocol;
-import bgu.spl.net.api.bidi.Connections;
+import bgu.spl.net.api.BIDI.Convertor;
+import bgu.spl.net.api.BIDI.BidiMessagingProtocol;
+import bgu.spl.net.api.BIDI.Connections;
 import bgu.spl.net.impl.BGSServer.BGSConnctionivity.BGSClientInformation;
 import bgu.spl.net.impl.BGSServer.BGSConnctionivity.BGSConnections;
-import bgu.spl.net.srv.bidi.ConnectionHandler;
+import bgu.spl.net.api.BIDI.ConnectionHandler;
 
 import java.util.LinkedList;
 

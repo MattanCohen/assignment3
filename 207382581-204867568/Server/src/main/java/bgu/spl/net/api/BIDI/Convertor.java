@@ -1,4 +1,4 @@
-package bgu.spl.net;
+package bgu.spl.net.api.BIDI;
 
 
 import java.nio.charset.StandardCharsets;

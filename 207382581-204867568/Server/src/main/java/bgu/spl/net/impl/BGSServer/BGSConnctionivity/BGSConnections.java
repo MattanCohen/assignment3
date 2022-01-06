@@ -1,11 +1,8 @@
 package bgu.spl.net.impl.BGSServer.BGSConnctionivity;
 
-import bgu.spl.net.api.bidi.Connections;
-import bgu.spl.net.impl.BGSServer.Tools;
-import bgu.spl.net.srv.bidi.ConnectionHandler;
-import com.sun.security.ntlm.Client;
+import bgu.spl.net.api.BIDI.Connections;
+import bgu.spl.net.api.BIDI.ConnectionHandler;
 
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 

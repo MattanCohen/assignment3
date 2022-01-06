@@ -1,13 +1,10 @@
 package bgu.spl.net.srv;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
-import bgu.spl.net.api.MessagingProtocol;
-import bgu.spl.net.api.bidi.BidiMessagingProtocol;
-import bgu.spl.net.srv.bidi.ConnectionHandler;
+import bgu.spl.net.api.BIDI.BidiMessagingProtocol;
+import bgu.spl.net.api.BIDI.ConnectionHandler;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;

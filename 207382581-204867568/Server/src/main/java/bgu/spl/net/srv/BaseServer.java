@@ -4,8 +4,8 @@ package bgu.spl.net.srv;
 
 
 import bgu.spl.net.api.MessageEncoderDecoder;
-import bgu.spl.net.api.bidi.BidiMessagingProtocol;
-import bgu.spl.net.api.bidi.Connections;
+import bgu.spl.net.api.BIDI.BidiMessagingProtocol;
+import bgu.spl.net.api.BIDI.Connections;
 import bgu.spl.net.impl.BGSServer.Tools;
 
 import java.io.IOException;
