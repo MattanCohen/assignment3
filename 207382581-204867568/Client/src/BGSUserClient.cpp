@@ -6,25 +6,12 @@ using namespace std;
 /**
 * This code assumes that the server replies the exact text the client sent it (as opposed to the practical session example)
 */
+
 bool shouldTerminate = false;
-int main (int argc, char *argv[]) {
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " host port" << std::endl << std::endl;
-        return -1;
-    }
-    std::string host = argv[1];
-    short port = atoi(argv[2]);
-  ConnectionHandler connectionHandler(host, port);
-    if (!connectionHandler.connect()) {
-        std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
-        return 1;
-    }
-    std::thread senderThread((sender));
-    std::thread readerThread((reader));
-    readerThread.join();
-    connectionHandler.close();
-    return 0;
-}
+
+ConnectionHandler connectionHandler;
+
+
 // in charge of reading commands from terminal and sending messages to the server
 void sender (){
       try{
@@ -37,7 +24,6 @@ void sender (){
             // get line from user (in terminal)
             std::cin.getline(buf, bufsize);
             std::string line(buf);
-            int len=line.length();
             // should encode line before sending to server
             //send line to server (should be encoded to bytes)
             if (!connectionHandler.sendLine(line)) {
@@ -45,14 +31,14 @@ void sender (){
                 break;
             }
         }
-                    // connectionHandler.sendLine(line) appends '\n' to the message. Therefore we send len+1 bytes.
-            std::cout << "Sent " << len+1 << " bytes to server" << std::endl;
         }
     catch (...){
         // if exception then socket is closed during getLine() wait so return
         return;
     }
 }
+
+
 void reader (){
     while (!shouldTerminate){
         // get response from server
@@ -68,7 +54,7 @@ void reader (){
             std::cout << "Disconnected. Exiting...\n" << std::endl;
             break;
         }
-        len=answer.length();
+        int len=answer.length();
         // A C string must end with a 0 char delimiter.  When we filled the answer buffer from the socket
         // we filled up to the \n char - we must make sure now that a 0 char is also present. So we truncate last character.
         answer.resize(len-1);
@@ -80,4 +66,23 @@ void reader (){
             break;
         }
     }
+}
+
+int main (int argc, char *argv[]) {
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " host port" << std::endl << std::endl;
+        return -1;
+    }
+    std::string host = argv[1];
+    short port = atoi(argv[2]);
+    ConnectionHandler connectionHandler(host, port);
+    if (!connectionHandler.connect()) {
+        std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
+        return 1;
+    }
+    std::thread senderThread((sender));
+    std::thread readerThread((reader));
+    readerThread.join();
+    connectionHandler.close();
+    return 0;
 }
