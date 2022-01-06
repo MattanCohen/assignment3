@@ -1,10 +1,13 @@
 CFLAGS:=-c -Wall -Weffc++ -g -std=c++11 -Iinclude
-LDFLAGS:=-lboost_system
+LDFLAGS:=-lboost_system -pthread
 
-all: BGSUserClient
-	g++ -o bin/BulbulHaKabulbulInc bin/connectionHandler.o bin/BGSUserClient.o $(LDFLAGS)
+all: clean BGSUserClient ConnectionHandler
+	g++ -o bin/ConnectionHandler bin/connectionHandler.o $(LDFLAGS)
+	g++ -o bin/BGSUserClient bin/connectionHandler.o bin/BGSUserClient.o $(LDFLAGS)
 
-BGSUserClient: bin/connectionHandler.o bin/BGSUserClient.o
+BGSUserClient: bin/connectionHandler.o
+
+ConnectionHandler: bin/connectionHandler.o bin/BGSUserClient.o
 
 bin/connectionHandler.o: src/connectionHandler.cpp
 	g++ $(CFLAGS) -o bin/connectionHandler.o src/connectionHandler.cpp
