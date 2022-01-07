@@ -20,13 +20,15 @@ void sender (){
             const short bufsize = 1024;
             char buf[bufsize];
             //
+            cout << "sender started" << endl;
             // get line from user (in terminal)
             std::cin.getline(buf, bufsize);
-            std::string line(buf);
+            std::string origLine(buf);
+            std::string line(connectionHandler.encode(origLine));
             // should encode line before sending to server
             //send line to server (should be encoded to bytes)
             if (!connectionHandler.sendLine(line)) {
-                std::cout << "Disconnected. Exiting...\n" << std::endl;
+                std::cout << "sender Disconnected. Exiting...\n" << std::endl;
                 break;
             }
         }
@@ -47,6 +49,9 @@ void reader (){
         // 2. Read a line (up to the newline character using the getline() buffered reader
         // 3. Read up to the null character
         std::string answer;
+        cout << "reader started" << endl;
+        cin.ignore();
+        cin.ignore();
         // Get back an answer: by using the expected number of bytes (len bytes + newline delimiter)
         // We could also use: connectionHandler.getline(answer) and then get the answer without the newline char at the end
         if (!connectionHandler.getLine(answer)) {
@@ -58,7 +63,8 @@ void reader (){
         // we filled up to the \n char - we must make sure now that a 0 char is also present. So we truncate last character.
         answer.resize(len-1);
         // std::cout << "Reply: " << answer << " " << len << " bytes " << std::endl << std::endl;
-        std::cout << "Client < " << answer << std::endl;
+        std::string decodedAnswer = connectionHandler.decode(answer);
+        std::cout << "Recieved: " << decodedAnswer << std::endl;
         if (answer == "ACK 3") {
             std::cout << "Exiting...\n" << std::endl;
             shouldTerminate = true;
@@ -77,7 +83,6 @@ int main (int argc, char *argv[]) {
     short port = atoi(argv[2]);
 
     ConnectionHandler connectionHandler(host, port);
-
     if (!connectionHandler.connect()) {
         std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
         return 1;

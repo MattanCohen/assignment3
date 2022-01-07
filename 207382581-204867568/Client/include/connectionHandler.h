@@ -48,7 +48,16 @@ public:
 	
     // Close down the connection properly.
     void close();
- 
+
+    void encode(std::string& msg);
+
+    void decode(std::string& msg);
+
+    void shortToBytes(short num, char* bytesArr);
+    
+    short bytesToShort(char* bytesArr);
+
+
 }; //class ConnectionHandler
  
 #endif

@@ -48,7 +48,7 @@ public abstract class BaseServer<T> implements Server<T> {
 
             while (!Thread.currentThread().isInterrupted()) {
                 Socket clientSock = serverSock.accept();
-
+                System.out.println("A new client has connected");
                 BlockingConnectionHandler<T> handler = new BlockingConnectionHandler<>(
                         clientSock,
                         encdecFactory.get(),
@@ -74,7 +74,12 @@ public abstract class BaseServer<T> implements Server<T> {
             }
         } catch (IOException ex) {
         }
-
+        try {
+            close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Problem with closing server "+e.getMessage());
+        }
         System.out.println("server closed!!!");
     }
 
