@@ -9,6 +9,7 @@ import bgu.spl.net.api.BIDI.Connections;
 import bgu.spl.net.impl.BGSServer.Tools;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.function.Supplier;
@@ -40,11 +41,12 @@ public abstract class BaseServer<T> implements Server<T> {
         try (ServerSocket serverSock = new ServerSocket(port)) {
 
 			System.out.println("TPC Server started");
-
             this.sock = serverSock; //just to be able to close
 
-            while (!Thread.currentThread().isInterrupted()) {
+            System.out.println("IP Host is: "+InetAddress.getLocalHost());
+            System.out.println("Server port is: "+serverSock.getLocalPort());
 
+            while (!Thread.currentThread().isInterrupted()) {
                 Socket clientSock = serverSock.accept();
 
                 BlockingConnectionHandler<T> handler = new BlockingConnectionHandler<>(
@@ -52,6 +54,7 @@ public abstract class BaseServer<T> implements Server<T> {
                         encdecFactory.get(),
                         protocolFactory.get(),
                         serverActiveConnections);
+
                 try{
 
                     //add handler to connections:

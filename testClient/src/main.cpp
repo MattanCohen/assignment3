@@ -13,7 +13,7 @@ ConnectionHandler connectionHandler;
 
 // in charge of reading commands from terminal and sending messages to the server
 void sender (){
-    try{
+      try{
         while (!shouldTerminate){
             // read command from terminal
             // create buffer
@@ -30,7 +30,7 @@ void sender (){
                 break;
             }
         }
-    }
+        }
     catch (...){
         // if exception then socket is closed during getLine() wait so return
         return;
@@ -46,7 +46,7 @@ void reader (){
         // 1. Read a fixed number of characters
         // 2. Read a line (up to the newline character using the getline() buffered reader
         // 3. Read up to the null character
-        std::string answer;
+               std::string answer;
         // Get back an answer: by using the expected number of bytes (len bytes + newline delimiter)
         // We could also use: connectionHandler.getline(answer) and then get the answer without the newline char at the end
         if (!connectionHandler.getLine(answer)) {
@@ -58,7 +58,7 @@ void reader (){
         // we filled up to the \n char - we must make sure now that a 0 char is also present. So we truncate last character.
         answer.resize(len-1);
         // std::cout << "Reply: " << answer << " " << len << " bytes " << std::endl << std::endl;
-        std::cout << "Client < " << answer << std::endl;
+           std::cout << "Client < " << answer << std::endl;
         if (answer == "ACK 3") {
             std::cout << "Exiting...\n" << std::endl;
             shouldTerminate = true;
