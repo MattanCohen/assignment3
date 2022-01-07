@@ -63,8 +63,8 @@ void reader (){
         // we filled up to the \n char - we must make sure now that a 0 char is also present. So we truncate last character.
         answer.resize(len-1);
         // std::cout << "Reply: " << answer << " " << len << " bytes " << std::endl << std::endl;
-        std::string decodedAnswer = connectionHandler.decode(answer);
-        std::cout << "Recieved: " << decodedAnswer << std::endl;
+        connectionHandler.decode(answer);
+        std::cout << "Recieved: " << answer << std::endl;
         if (answer == "ACK 3") {
             std::cout << "Exiting...\n" << std::endl;
             shouldTerminate = true;

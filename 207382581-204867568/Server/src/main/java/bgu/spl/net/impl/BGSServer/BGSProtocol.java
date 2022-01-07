@@ -54,7 +54,7 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
     // if msg is register, connections.register
     @Override
     public void process(String msg) {
-
+        System.out.println(msg);
 //        shouldTerminate = (msg=="LOGOUT");
         String [] message=msg.split(" ");
         String userName="";
