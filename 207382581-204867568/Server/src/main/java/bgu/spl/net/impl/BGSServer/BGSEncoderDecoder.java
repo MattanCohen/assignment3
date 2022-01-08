@@ -10,7 +10,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
 
     private byte[] bytes = new byte[1 << 10]; //start with 1k
     private int len = 0;
-
+    private int pos = 0;
 
     /**
      * The server can receive any message for our concern.
@@ -24,15 +24,15 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
                             " Real Byte back to Byte: " + (byte)(char)nextByte);
         //if that byte ends, command now has all information.
         if (nextByte==';'){
-            System.out.println();
-            int i=0;
-            int realBytesLength = 0;
-            while (i<bytes.length && bytes[i] != '\0'){
-                realBytesLength++;
-                i++;
-            }
-            byte [] realBytes = new byte[realBytesLength];
-            for (int j=0; j<realBytesLength; j++)
+//            System.out.println();
+//            int i=0;
+//            int realBytesLength = 0;
+//            while (i<bytes.length && bytes[i] != '\0'){
+//                realBytesLength++;
+//                i++;
+//            }
+            byte [] realBytes = new byte[pos];
+            for (int j=0; j<pos; j++)
                 realBytes[j] = bytes[j];
             String ans=decodeBytes(realBytes);
             resetBytes();
@@ -40,6 +40,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         }
         //if nextByte isn't ';', add nextByte to bytes array and return null (message is still readeded)
         pushByte(nextByte);
+        pos++;
         return null;
     }
     public String decodeBytes(byte[] byteArr){
@@ -400,10 +401,10 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         // No optional information in ACK
         if (commandSplit.length==2) {
             // add 2 bytes for ackCode and message opCode in reversed order + BigEndian
-            B.addFirst((byte)(ackOpCode<<8));
-            B.addFirst((byte)(ackOpCode));
-            B.addFirst((byte)(messageOpCode<<8));
-            B.addFirst((byte)(messageOpCode));
+            B.addFirst((byte)((char)(ackOpCode<<8)));
+            B.addFirst((byte)((char)(ackOpCode)));
+            B.addFirst((byte)((char)(messageOpCode<<8)));
+            B.addFirst((byte)((char)(messageOpCode)));
         }
         // Additional information based on messageOpCode
         else {

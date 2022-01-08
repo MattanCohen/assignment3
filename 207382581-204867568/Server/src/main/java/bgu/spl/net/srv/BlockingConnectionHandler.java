@@ -1,5 +1,6 @@
 package bgu.spl.net.srv;
 
+import bgu.spl.net.api.BIDI.Convertor;
 import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.BIDI.BidiMessagingProtocol;
 import bgu.spl.net.api.BIDI.Connections;
@@ -9,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler<T> {
 
@@ -45,6 +47,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
 //                System.out.println(client+" has read a line");
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
+                    System.out.println(client+" sending to protocol to process: "+nextMessage);
                     protocol.process(nextMessage);
                 }
             }
@@ -76,7 +79,11 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     @Override
     public void send(T msg) {
         try {
-            out.write(encdec.encode(msg));
+            System.out.println("problem is here BlockingConectionHandler 80");
+            byte[] messageInBytes = encdec.encode(msg);
+            messageInBytes = Convertor.reverese(messageInBytes);
+            System.out.println("send message: "+Arrays.toString(messageInBytes));
+            out.write(messageInBytes);
             out.flush();
         } catch (IOException e) {
             System.out.println("exception in send in BlockingConnectionHandler "+e.getMessage());

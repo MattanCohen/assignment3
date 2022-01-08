@@ -9,21 +9,21 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class BGSConnections implements Connections<String> {
 
     // map handler to userName
-    ConcurrentHashMap <String, ConnectionHandler<String>> registeredUsers;
+    ConcurrentHashMap <String, ConnectionHandler<String>> registeredUsers = new ConcurrentHashMap<>();
 
     // map logged on userNames to conId
-    ConcurrentHashMap <Integer , String> loggedOnUsers;
+    ConcurrentHashMap <Integer , String> loggedOnUsers= new ConcurrentHashMap<>();
 
     // map information to userName
-    ConcurrentHashMap <String, BGSClientInformation> usersInformation;
+    ConcurrentHashMap <String, BGSClientInformation> usersInformation= new ConcurrentHashMap<>();
 
     //map the messages sent while afk to username
-    ConcurrentHashMap <String, ConcurrentLinkedDeque<String>> usersAwaitingMessages;
+    ConcurrentHashMap <String, ConcurrentLinkedDeque<String>> usersAwaitingMessages= new ConcurrentHashMap<>();
 
 
 
     // map time to messages posted by handler (pm or post)
-    ConcurrentHashMap<String,String> messagesId;
+    ConcurrentHashMap<String,String> messagesId= new ConcurrentHashMap<>();
 
 
     /**
@@ -41,7 +41,7 @@ public class BGSConnections implements Connections<String> {
             handler.send(msg);
         }
         catch (NullPointerException e){System.out.println("exception in send in BGSConnections "+e.getMessage()); }
-        return false;
+        throw new NullPointerException();
     }
 
 
@@ -78,6 +78,9 @@ public class BGSConnections implements Connections<String> {
     ConcurrentHashMap <String, BGSClientInformation> usersInformation;
      */
 
+
+
+
     /**
      * request register
      * if userName is registered, return false.
@@ -92,15 +95,14 @@ public class BGSConnections implements Connections<String> {
      * @retyrn false   otherwise
      */
     public boolean registerUser(Integer conid, String userName, String password, String birthday, ConnectionHandler<String> handler){
-        try{
-            registeredUsers.get(userName);
+        if (registeredUsers.contains(userName)){
+            return false;
+        }
+        else{
             BGSClientInformation info=new BGSClientInformation(userName,password,birthday);
             registeredUsers.put(userName,handler);
             usersInformation.put(userName,info);
             return true;
-        }
-        catch (NullPointerException e){
-            return false;
         }
     }
 
@@ -186,10 +188,13 @@ public class BGSConnections implements Connections<String> {
     }
 
     public boolean isLogged(Integer conId){
-        try{
+        if (loggedOnUsers.contains(conId)){
             loggedOnUsers.get(conId);
             return true;
-        } catch (Exception e){return false;}
+        }
+        else{
+            return false;
+        }
     }
 
     public boolean isLogged(String userName){

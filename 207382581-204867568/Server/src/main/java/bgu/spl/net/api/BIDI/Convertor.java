@@ -5,6 +5,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 public class Convertor {
+
+    public static byte[] reverese (byte[]byteArr){
+        LinkedList<Byte> flipped = new LinkedList<>();
+         for (byte b : byteArr)
+             flipped.push(b);
+         return linkedListToByteArray(flipped);
+    }
+
     /**
      *
      * @param  byteArr array size 2 representing short

@@ -7,6 +7,7 @@ import bgu.spl.net.impl.BGSServer.BGSConnctionivity.BGSClientInformation;
 import bgu.spl.net.impl.BGSServer.BGSConnctionivity.BGSConnections;
 import bgu.spl.net.api.BIDI.ConnectionHandler;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 /*
@@ -58,59 +59,64 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
         String [] message=msg.split(" ");
         String userName="";
         String error="ERROR ";
-        try{
-            userName= bgsConnections.conIdToUsername(conId);
-        }catch (NullPointerException n){
+        System.out.println("processing for cliend #"+conId);
+        if (!bgsConnections.isLogged(conId)){
+            System.out.println("Command is LOGIN or REGISTER");
             /* supposed to be null in login or register*/
-            userName=null;
-            if (message[0] == "LOGIN"){
+            userName = message[1];
+            if (message[0].equals("LOGIN")){
                 handleLogin(message, userName, error);
             }
-            else if (message[0] == "REGISTER"){
+            else if (message[0].equals("REGISTER")){
                 handleRegister(message, userName, error);
             }
         }
-        switch (message[0]) {
-            case ("LOGOUT"): {
-                handleLogout(message, userName, error);
-                break;
-            }
-            case ("FOLLOW"): {
-                handleFollow(message, userName, error);
-                break;
-            }
-            case ("POST"): {
-                handlePost(message, userName, error);
-                break;
-            }
-            case ("PM"): {
-                handlePM(message, userName, error);
-                break;
-            }
-            case ("LOGSTAT"): {
-                handleLogStat(message, userName, error);
-                break;
-            }
-            case ("STAT"): {
-                handleStat(message, userName, error);
-                break;
-            }
-            case ("BLOCK"): {
-                handleBlock(message, userName, error);
-                break;
-            }
-            // user already logged in, commands need to send error
-            case ("LOGIN"): {
-                bgsConnections.send(conId, error + "LOGIN");
-                break;
+        else{
+            System.out.println("Command isn't LOGIN or REGISTER (user is logged)");
+            userName= bgsConnections.conIdToUsername(conId);
+            switch (message[0]) {
+                case ("LOGOUT"): {
+                    handleLogout(message, userName, error);
+                    break;
+                }
+                case ("FOLLOW"): {
+                    handleFollow(message, userName, error);
+                    break;
+                }
+                case ("POST"): {
+                    handlePost(message, userName, error);
+                    break;
+                }
+                case ("PM"): {
+                    handlePM(message, userName, error);
+                    break;
+                }
+                case ("LOGSTAT"): {
+                    handleLogStat(message, userName, error);
+                    break;
+                }
+                case ("STAT"): {
+                    handleStat(message, userName, error);
+                    break;
+                }
+                case ("BLOCK"): {
+                    handleBlock(message, userName, error);
+                    break;
+                }
+                // user already logged in, commands need to send error
+                case ("LOGIN"): {
+                    bgsConnections.send(conId, error + "LOGIN");
+                    break;
+
+                }
+                case ("REGISTER"): {
+                    bgsConnections.send(conId, error + "REGISTER");
+                    break;
+                }
 
             }
-            case ("REGISTER"): {
-                bgsConnections.send(conId, error + "REGISTER");
-                break;
-            }
-
         }
+
     }
 
     /**
@@ -124,11 +130,11 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
         try{
             // if user is already registered
             if (!bgsConnections.registerUser(conId,userName,message[2],message[3],protocolHandler)){
-                bgsConnections.send(conId,error);
+                bgsConnections.getRegisteredUsers().get(userName).send("ERROR");
                 return;
             }
         }finally {
-            bgsConnections.send(conId,"ACK 1");
+            bgsConnections.getRegisteredUsers().get(userName).send("ACK 1");
         }
     }
 
