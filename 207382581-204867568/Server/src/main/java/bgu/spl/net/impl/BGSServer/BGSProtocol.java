@@ -130,11 +130,11 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
         try{
             // if user is already registered
             if (!bgsConnections.registerUser(conId,userName,message[2],message[3],protocolHandler)){
-                bgsConnections.getRegisteredUsers().get(userName).send("ERROR");
+                protocolHandler.send(error);
                 return;
             }
         }finally {
-            bgsConnections.getRegisteredUsers().get(userName).send("ACK 1");
+            protocolHandler.send("ACK 1");
         }
     }
 
@@ -229,13 +229,13 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
         -send ACK
          */
             if (cantLogIn(userName,message)){
-                bgsConnections.send(conId,error);
+                protocolHandler.send(error);
                 return;
             }
             bgsConnections.logIn(conId,userName);
         }
         finally {
-            bgsConnections.send(conId,"ACK 2");
+            protocolHandler.send("ACK 2");
         }
     }
 
