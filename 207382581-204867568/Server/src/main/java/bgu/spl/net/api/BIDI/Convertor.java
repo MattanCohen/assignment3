@@ -14,6 +14,11 @@ public class Convertor {
     {
         short result = (short)((byteArr[0] & 0xff) << 8);
         result += (short)(byteArr[1] & 0xff);
+        if (result>256){
+            int dif = result/256;
+            result -= 256*dif;
+            result += dif*10;
+        }
         return result;
     }
 
@@ -196,7 +201,8 @@ public class Convertor {
      * @return relevant Opcode as cmnd String or null if  isn't relevant
      */
     public static String opcodeToString(short opCode){
-        switch(opCode) {
+        switch (opCode){
+//        switch(Character.getNumericValue((char)((byte)opCode))) {
             case 1:
                 return "REGISTER";
             case 2:

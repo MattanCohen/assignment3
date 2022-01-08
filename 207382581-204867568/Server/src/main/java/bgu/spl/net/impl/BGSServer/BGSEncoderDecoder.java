@@ -20,9 +20,21 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
      */
     @Override
     public String decodeNextByte(byte nextByte) {
+        System.out.println("Real byte: "+(char)nextByte+" ASCII byte: "+nextByte+
+                            " Real Byte back to Byte: " + (byte)(char)nextByte);
         //if that byte ends, command now has all information.
         if (nextByte==';'){
-            String ans=decodeBytes(bytes);
+            System.out.println();
+            int i=0;
+            int realBytesLength = 0;
+            while (i<bytes.length && bytes[i] != '\0'){
+                realBytesLength++;
+                i++;
+            }
+            byte [] realBytes = new byte[realBytesLength];
+            for (int j=0; j<realBytesLength; j++)
+                realBytes[j] = bytes[j];
+            String ans=decodeBytes(realBytes);
             resetBytes();
             return ans;
         }
@@ -31,12 +43,19 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         return null;
     }
     public String decodeBytes(byte[] byteArr){
+        System.out.println("received message: "+Arrays.toString(byteArr));
+        System.out.println("message to string: "+Convertor.bytesToString(byteArr));
+        byte [] opCodeArr = new byte [2];
+        for (int i=0; i<2; i++)
+            opCodeArr[i] = (byte) Character.getNumericValue (byteArr[i]);
         String ans="";
         //get the opCode of the message
-        byte [] opCodeArr={byteArr[0],byteArr[1]};
         short opCode=Convertor.bytesToShort(opCodeArr);
-        //get opCode as string as well
         String opCodeString=Convertor.opcodeToString(opCode);
+        System.out.println("extracted opCodeShort: "+opCode);
+        System.out.println("extracted opCodeString: "+opCodeString);
+        System.out.println("actual message: "+Arrays.toString(byteArr));
+        //get opCode as string as well
         //create temporary linked list as bytes
         LinkedList<Byte> bytesAsLinkedList=Convertor.byteArrayToLinkedList(byteArr);
         //remove opccode from temp
@@ -101,7 +120,8 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
             }
             // if command opCode isn't legal
             default:
-                System.out.println("hey, this command isn't legal! wtf????");
+                System.out.println();
+                System.out.println("hey, this command isn't legal! EncodeNextByte");
 
 
         }

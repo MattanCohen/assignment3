@@ -54,7 +54,6 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
     // if msg is register, connections.register
     @Override
     public void process(String msg) {
-        System.out.println(msg);
 //        shouldTerminate = (msg=="LOGOUT");
         String [] message=msg.split(" ");
         String userName="";
@@ -67,39 +66,48 @@ public class BGSProtocol implements BidiMessagingProtocol<String> {
             if (message[0] == "LOGIN"){
                 handleLogin(message, userName, error);
             }
-            if (message[0] == "REGISTER"){
+            else if (message[0] == "REGISTER"){
                 handleRegister(message, userName, error);
             }
         }
         switch (message[0]) {
             case ("LOGOUT"): {
                 handleLogout(message, userName, error);
+                break;
             }
             case ("FOLLOW"): {
                 handleFollow(message, userName, error);
+                break;
             }
             case ("POST"): {
                 handlePost(message, userName, error);
+                break;
             }
             case ("PM"): {
                 handlePM(message, userName, error);
+                break;
             }
             case ("LOGSTAT"): {
                 handleLogStat(message, userName, error);
+                break;
             }
             case ("STAT"): {
                 handleStat(message, userName, error);
+                break;
             }
             case ("BLOCK"): {
                 handleBlock(message, userName, error);
+                break;
             }
             // user already logged in, commands need to send error
             case ("LOGIN"): {
                 bgsConnections.send(conId, error + "LOGIN");
+                break;
 
             }
             case ("REGISTER"): {
                 bgsConnections.send(conId, error + "REGISTER");
+                break;
             }
 
         }
