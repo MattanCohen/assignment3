@@ -6,7 +6,7 @@ import bgu.spl.net.srv.Server;
 
 import java.util.Arrays;
 
-public class TPCMain {
+public class    TPCMain {
 
     public static void main (String[]args){
 

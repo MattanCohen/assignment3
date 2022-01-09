@@ -9,7 +9,7 @@ public class BGSClientInformation {
     String password;
     String birthday;
 
-    // userNames follow this handler
+    // userNames that follow this handler
     ConcurrentLinkedDeque<String> followersList;
     // users that got blocked by handler
     ConcurrentLinkedDeque<String> blockedList;
@@ -68,7 +68,7 @@ public class BGSClientInformation {
         return true;
     }
 
-    public boolean follows(String toFollow){
+    public boolean isFollower(String toFollow){
         return (followersList.contains(toFollow));
     }
 
@@ -78,11 +78,15 @@ public class BGSClientInformation {
     public void addBlocked(String toBlock){
         if (!blockedList.contains(toBlock)) {
             blockedList.add(toBlock);
+            try{
+                followersList.remove(toBlock);
+            }
+            catch (Exception e){}
         }
     }
 
 
-    public boolean blocked (String toFollow){
+    public boolean blocked(String toFollow){
         return (blockedList.contains(toFollow));
     }
 

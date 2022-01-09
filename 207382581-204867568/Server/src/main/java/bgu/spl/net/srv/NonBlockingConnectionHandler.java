@@ -1,13 +1,17 @@
 package bgu.spl.net.srv;
 
+import bgu.spl.net.api.BIDI.Convertor;
 import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.BIDI.BidiMessagingProtocol;
 import bgu.spl.net.api.BIDI.ConnectionHandler;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -155,17 +159,41 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
     }
 
 
-     /**
+//     /**
+//     * used to send push notification to a client (bypassing writeQueue)
+//     * going to be used by the BGSProtocol
+//     * @param msg ack/error
+//     * @post socket's immediate output stream is msg
+//     * */
+//    @Override
+//    public void send(T msg) {
+//        writeQueue.add(ByteBuffer.wrap(encdec.encode(msg)));
+//        reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+//    }
+
+    /**
      * used to send push notification to a client (bypassing writeQueue)
      * going to be used by the BGSProtocol
      * @param msg ack/error
      * @post socket's immediate output stream is msg
-     * */
+     */
     @Override
     public void send(T msg) {
-        writeQueue.add(ByteBuffer.wrap(encdec.encode(msg)));
-        reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+        try (Socket sock = this.chan.socket()) {
+            BufferedOutputStream out = new BufferedOutputStream(sock.getOutputStream());
+            System.out.println("send message (string): "+msg);
+            byte[] messageInBytes = encdec.encode(msg);
+            messageInBytes = Convertor.reverese(messageInBytes);
+            System.out.println("send message (bytes): "+ Arrays.toString(messageInBytes));
+            System.out.println("------------------------------------------------------");
+            out.write(messageInBytes);
+            out.flush();
+        } catch (IOException e) {
+            System.out.println("exception in send in BlockingConnectionHandler "+e.getMessage());
+            close();
+        }
     }
+
 
 }
 

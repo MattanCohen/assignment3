@@ -55,7 +55,13 @@ public class Convertor {
         return new String(byteArr, StandardCharsets.UTF_8);
     }
     public static String bytesToString (LinkedList<Byte> byteArr){
-        return new String(Convertor.linkedListToByteArray(byteArr), StandardCharsets.UTF_8);
+        LinkedList<Byte> realByteArr = new LinkedList<Byte>();
+        for (Byte b : byteArr){
+            if (b == '\0')
+                break;
+            realByteArr.add(b);
+        }
+        return new String(Convertor.linkedListToByteArray(realByteArr), StandardCharsets.UTF_8);
     }
 
     /**
@@ -86,6 +92,7 @@ public class Convertor {
     public static Short extractOpcodeAsShortFromString(String command) {
         if (stringToOpcode(command)!=-1)
             return  stringToOpcode(command);
+        System.out.println("extract OpCodeasShort in Converter from: "+command);
         return stringToOpcode(command.substring(0,command.indexOf(' ')));
     }
     /**

@@ -19,8 +19,8 @@ public class Tools {
 
 
 
-    private static boolean created=false;
-    private static HashMap<String,Byte> filteredWordsMap=new HashMap<>();
+//    private static boolean created=false;
+//    private static HashMap<String,Byte> filteredWordsMap=new HashMap<>();
 
     public static int getConId() {
         return conId.get();
@@ -64,31 +64,23 @@ public class Tools {
      *
      * @return filtered words: list of strings
      */
-    public synchronized static HashMap<String,Byte> FilteredWords(){
-        if (!created){
-            for (String filteredWord : filteredWords){
-                // add all strings in filteredWords but make sure its lowered case
-                filteredWordsMap.put(filteredWord.toLowerCase(),(byte) 1);
-            }
-            created=true;
-        }
-        return filteredWordsMap;
-    }
-
+//    public synchronized static HashMap<String,Byte> FilteredWords(){
+//        if (!created){
+//            for (String filteredWord : filteredWords){
+//                 add all strings in filteredWords but make sure its lowered case
+//                filteredWordsMap.put(filteredWord.toLowerCase(),(byte) 1);
+//            }
+//            created=true;
+//        }
+//        return filteredWordsMap;
+//    }
+//
     public static boolean shouldFilter(String toCheck) {
-        // incase filteredWords wasn't created, create it
-        FilteredWords();
         // lowerCase toCheck
         toCheck = toCheck.toLowerCase();
-        // return true <---> filteredWords contains toCheck <---> get isn't null
-        try{
-            filteredWordsMap.get(toCheck);
+        if (filteredWords.contains(toCheck))
             return true;
-        }
-        // NullPointerException was thrown <---> get is null <---> filteredWords doesn't contain toCheck
-        catch (NullPointerException e){
-            return false;
-        }
+        return false;
     }
 
     public static String filtered(){ return "<filtered>";}

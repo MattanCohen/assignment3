@@ -10,7 +10,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
 
     private byte[] bytes = new byte[1 << 10]; //start with 1k
     private int len = 0;
-    private int pos = 0;
+
 
     /**
      * The server can receive any message for our concern.
@@ -20,32 +20,21 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
      */
     @Override
     public String decodeNextByte(byte nextByte) {
-        System.out.println("Real byte: "+(char)nextByte+" ASCII byte: "+nextByte+
-                            " Real Byte back to Byte: " + (byte)(char)nextByte);
+//        System.out.println("Real byte: "+(char)nextByte+" ASCII byte: "+nextByte+
+//                            " Real Byte back to Byte: " + (byte)(char)nextByte);
         //if that byte ends, command now has all information.
         if (nextByte==';'){
-//            System.out.println();
-//            int i=0;
-//            int realBytesLength = 0;
-//            while (i<bytes.length && bytes[i] != '\0'){
-//                realBytesLength++;
-//                i++;
-//            }
-            byte [] realBytes = new byte[pos];
-            for (int j=0; j<pos; j++)
-                realBytes[j] = bytes[j];
-            String ans=decodeBytes(realBytes);
+            String ans=decodeBytes(bytes);
             resetBytes();
             return ans;
         }
         //if nextByte isn't ';', add nextByte to bytes array and return null (message is still readeded)
         pushByte(nextByte);
-        pos++;
         return null;
     }
     public String decodeBytes(byte[] byteArr){
-        System.out.println("received message: "+Arrays.toString(byteArr));
-        System.out.println("message to string: "+Convertor.bytesToString(byteArr));
+//        System.out.println("received message: "+Arrays.toString(byteArr));
+//        System.out.println("message to string: "+Convertor.bytesToString(byteArr));
         byte [] opCodeArr = new byte [2];
         for (int i=0; i<2; i++)
             opCodeArr[i] = (byte) Character.getNumericValue (byteArr[i]);
@@ -53,15 +42,17 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         //get the opCode of the message
         short opCode=Convertor.bytesToShort(opCodeArr);
         String opCodeString=Convertor.opcodeToString(opCode);
-        System.out.println("extracted opCodeShort: "+opCode);
-        System.out.println("extracted opCodeString: "+opCodeString);
-        System.out.println("actual message: "+Arrays.toString(byteArr));
+ //       System.out.println("extracted opCodeShort: "+opCode);
+ //       System.out.println("extracted opCodeString: "+opCodeString);
+ //       System.out.println("actual message: "+Arrays.toString(byteArr));
         //get opCode as string as well
         //create temporary linked list as bytes
         LinkedList<Byte> bytesAsLinkedList=Convertor.byteArrayToLinkedList(byteArr);
+
         //remove opccode from temp
         bytesAsLinkedList.removeFirst();
         bytesAsLinkedList.removeFirst();;
+
         switch (opCode){
             // incase command is REGISTER
             case 1:
@@ -87,10 +78,10 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
                 LinkedList<Byte> contentNameBytes=new LinkedList<>();
                 while (bytesAsLinkedList.size()!=0){
                     Byte b=bytesAsLinkedList.removeFirst();
-                    contentNameBytes.add(b);
                     if (b=='\0') {
                         break;
                     }
+                    contentNameBytes.add(b);
                 }
                 String content=Convertor.bytesToString(contentNameBytes);
 
@@ -186,30 +177,34 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         // create seperate linked lists for each field
         while (bytes.size()!=0){
             Byte b=bytes.removeFirst();
-            usernameBytesL.add(b);
             if (b=='\0') {
                 break;
             }
+            usernameBytesL.add(b);
         }
+
         while (bytes.size()!=0) {
             Byte b = bytes.removeFirst();
+            if (b == '\0') {
+                break;
+            }
             passwordBytesL.add(b);
-            if (b == '\0') {
-                break;
-            }
         }
+
         while (bytes.size()!=0) {
             Byte b = bytes.removeFirst();
-            birthdayBytesL.add(b);
             if (b == '\0') {
                 break;
             }
+            birthdayBytesL.add(b);
         }
+
         String userName = Convertor.bytesToString(usernameBytesL);
         String password = Convertor.bytesToString(passwordBytesL);
         String birthday = Convertor.bytesToString(birthdayBytesL);
 
-        return opCodeString+" "+userName+" "+password+" "+birthday;
+
+        return "REGISTER"+" "+userName+" "+password+" "+birthday;
     }
 
     public String handleFollow(String opCodeString,LinkedList<Byte> bytes){
@@ -228,7 +223,7 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
 
         //get userName
         String userName=Convertor.bytesToString(bytes);
-        System.out.println("userName "+userName);
+//        System.out.println("userName "+userName);
         return opCodeString+" "+followUnfollow+" "+userName;
     }
 
@@ -237,10 +232,10 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         LinkedList<Byte> userNameBytes=new LinkedList<>();
         while (bytes.size()!=0){
             Byte b=bytes.removeFirst();
-            userNameBytes.add(b);
             if (b=='\0') {
                 break;
             }
+            userNameBytes.add(b);
         }
         String userName=Convertor.bytesToString(userNameBytes);
 
@@ -248,26 +243,26 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         LinkedList<Byte> contentBytes=new LinkedList<>();
         while (bytes.size()!=0){
             Byte b=bytes.removeFirst();
-            contentBytes.add(b);
             if (b=='\0') {
                 break;
             }
+            contentBytes.add(b);
         }
         String content=Convertor.bytesToString(contentBytes);
 
-
-        //get time
-        LinkedList<Byte> timeBytes=new LinkedList<>();
-        while (bytes.size()!=0){
-            Byte b=bytes.removeFirst();
-            timeBytes.add(b);
-            if (b=='\0') {
-                break;
-            }
-        }
-        String time=Convertor.bytesToString(timeBytes);
-
-        return opCode+" "+userName+" "+content+" "+time;
+//
+//        //get time
+//        LinkedList<Byte> timeBytes=new LinkedList<>();
+//        while (bytes.size()!=0){
+//            Byte b=bytes.removeFirst();
+//            if (b=='\0') {
+//                break;
+//            }
+//            timeBytes.add(b);
+//        }
+//        String time=Convertor.bytesToString(timeBytes);
+        return opCode+" "+userName+" "+content;
+//        return opCode+" "+userName+" "+content+" "+time;
     }
 
 
@@ -276,25 +271,25 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         LinkedList<Byte> userNameBytes=new LinkedList<>();
         while (bytes.size()!=0){
             Byte b=bytes.removeFirst();
-            userNameBytes.add(b);
             if (b=='\0') {
                 break;
             }
+            userNameBytes.add(b);
         }
 
         //get password as byte list
         LinkedList<Byte> passwordBytes=new LinkedList<>();
         while (bytes.size()!=0){
             Byte b=bytes.removeFirst();
-            passwordBytes.add(b);
             if (b=='\0') {
                 break;
             }
+            passwordBytes.add(b);
         }
 
         // string representation of boolean capcha
         String capcha = "";
-        if(bytes.getLast()==(byte)'1'){
+        if(Character.getNumericValue(bytes.getFirst()) == 1){
             capcha+="1";
         }
         else {capcha+="0";}
@@ -401,10 +396,10 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
         // No optional information in ACK
         if (commandSplit.length==2) {
             // add 2 bytes for ackCode and message opCode in reversed order + BigEndian
-            B.addFirst((byte)((char)(ackOpCode<<8)));
-            B.addFirst((byte)((char)(ackOpCode)));
-            B.addFirst((byte)((char)(messageOpCode<<8)));
-            B.addFirst((byte)((char)(messageOpCode)));
+            B.addFirst((byte)(ackOpCode<<8));
+            B.addFirst((byte)(ackOpCode));
+            B.addFirst((byte)(messageOpCode<<8));
+            B.addFirst((byte)(messageOpCode));
         }
         // Additional information based on messageOpCode
         else {
@@ -416,15 +411,19 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
                     B.addFirst((byte)(messageOpCode<<8));
                     B.addFirst((byte)(messageOpCode));
 
+//                    System.out.println("commandSplit[1] == \"0\" ? "+ (commandSplit[1].equals("0")));
+//                    System.out.println("commandSplit[1] == \'0\' ? "+ (commandSplit[1].equals('0')));
+//                    System.out.println("commandSplit[2] == \"0\" ? "+ (commandSplit[2].equals("0")));
+//                    System.out.println("commandSplit[2] == \'0\' ? "+ (commandSplit[2].equals('0')));
                     // follow/unfollow
-                    if(commandSplit[2]=="0"){
-                        B.addFirst((byte)'0');
-                    }
-                    else{
-                        B.addFirst((byte)'1');
-                    }
-                    String userString = "";
-                    for(int i=3; i<commandSplit.length;i++) {
+//                    if(commandSplit[1].equals("0")){
+//                        B.addFirst((byte)'0');
+//                    }
+//                    else{
+//                        B.addFirst((byte)'1');
+//                    }
+                    String userString = " ";
+                    for(int i=2; i<commandSplit.length;i++) {
                         userString+=commandSplit[i];
                         // in cae username has space
                         if (i< commandSplit.length-1) {
@@ -445,17 +444,28 @@ public class BGSEncoderDecoder implements MessageEncoderDecoder<String> {
                 // for every user
                 // ACK-Opcode LOGSTAT-Opcode/Stat-Opcode <Age> <NumPosts> <NumFollowers> <NumFollowing>
                 case 7: case 8: {
+                    if (commandSplit.length==2){
+                        LinkedList <Byte> UserBytesStats = new LinkedList<>();
+                        short ackVal=Convertor.stringToOpcode(commandSplit[0]);
+                        UserBytesStats.add((byte)(ackVal<<8));
+                        UserBytesStats.add((byte)ackVal);
+                        short shortVal = Short.parseShort(commandSplit[1]);
+                        UserBytesStats.add((byte)(shortVal<<8));
+                        UserBytesStats.add((byte)shortVal);
+                    }
+                    else{
                     /* go over each line from start (ACK) to finish (NumFollowing). each line is a bitch and looks as such:
                         (ACK_String) (7/8_short) (AGE_short) (NumPosts_short) (NumFollowers_short) (NumFollowing_short)
                      */
-                    for(int i=0; i<commandSplit.length;i+=6) {
-                        // create byte array with all of the details of a single user
-                        String[] userStatLine = {commandSplit[i],commandSplit[i+1],commandSplit[i+2],commandSplit[i+3],commandSplit[i+4],commandSplit[i+5]};
-                        // create Byte list of the bitch stats row to bytes
-                        LinkedList<Byte> userStatBytes = USLToBytes(userStatLine);
-                        // insert bytes in reversed order BIG ENDIAN
-                        for(Byte b:userStatBytes) {
-                            B.addFirst(b);
+                        for(int i=0; i<commandSplit.length;i+=6) {
+                            // create byte array with all of the details of a single user
+                            String[] userStatLine = {commandSplit[i],commandSplit[i+1],commandSplit[i+2],commandSplit[i+3],commandSplit[i+4],commandSplit[i+5]};
+                            // create Byte list of the bitch stats row to bytes
+                            LinkedList<Byte> userStatBytes = USLToBytes(userStatLine);
+                            // insert bytes in reversed order BIG ENDIAN
+                            for(Byte b:userStatBytes) {
+                                B.addFirst(b);
+                            }
                         }
                     }
                 }

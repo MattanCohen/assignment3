@@ -3,6 +3,7 @@ package bgu.spl.net.impl.BGSServer.BGSConnctionivity;
 import bgu.spl.net.api.BIDI.Connections;
 import bgu.spl.net.api.BIDI.ConnectionHandler;
 
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -17,7 +18,7 @@ public class BGSConnections implements Connections<String> {
     // map information to userName
     ConcurrentHashMap <String, BGSClientInformation> usersInformation= new ConcurrentHashMap<>();
 
-    //map the messages sent while afk to username
+    //map the messages sent while afk to handler
     ConcurrentHashMap <String, ConcurrentLinkedDeque<String>> usersAwaitingMessages= new ConcurrentHashMap<>();
 
 
@@ -95,13 +96,15 @@ public class BGSConnections implements Connections<String> {
      * @retyrn false   otherwise
      */
     public boolean registerUser(Integer conid, String userName, String password, String birthday, ConnectionHandler<String> handler){
-        if (registeredUsers.contains(userName)){
+        if (isRegistered(userName)){
             return false;
         }
         else{
             BGSClientInformation info=new BGSClientInformation(userName,password,birthday);
             registeredUsers.put(userName,handler);
             usersInformation.put(userName,info);
+            ConcurrentLinkedDeque<String> usersMessages = new ConcurrentLinkedDeque<>();
+            usersAwaitingMessages.put(userName, usersMessages);
             return true;
         }
     }
@@ -114,10 +117,16 @@ public class BGSConnections implements Connections<String> {
      * @param username - unique unsername
      * @return
      */
-    public boolean logIn(Integer conId, String username){
-       loggedOnUsers.put(conId,username);
-       executeAFKMessages(username);
-       return true;
+//    public boolean logIn(Integer conId,String username){
+//        loggedOnUsers.put(conId,username);
+//        executeAFKMessages(getUserInformation(username));
+//        return true;
+//    }
+    public ConcurrentLinkedDeque<String> logIn(Integer conId,String username){
+        loggedOnUsers.put(conId,username);
+        ConcurrentLinkedDeque<String> userAwaitingMessages = usersAwaitingMessages.get(username);
+        userAwaitingMessages.remove(username);
+        return userAwaitingMessages;
     }
 
     /**
@@ -150,57 +159,44 @@ public class BGSConnections implements Connections<String> {
     /**
      * 2 ways to get userInformation
      * */
-    public BGSClientInformation getUserInformation(Integer conId) {
-        BGSClientInformation b=new BGSClientInformation("","","");
-        try{
-            b=usersInformation.get(conId);
-        } catch (Exception e){System.out.println("Exception occurred in getUserInformation in BGSConnections "+e.getMessage());}
-        finally {
-            return b;
+    public BGSClientInformation getUserInformation(String userName) {
+        System.out.println("get "+ userName+" Information in BGSConnections");
+        if (usersInformation.keySet().contains(userName)){
+            System.out.println("usersInformation contains "+userName);
+            return usersInformation.get(userName);
         }
+        return null;
     }
 
     public int userNameToConId(String userName){
-        try{
-            for (int checkedId : loggedOnUsers.keySet())
-                if (loggedOnUsers.get(checkedId) == userName) {
+        for (int checkedId : loggedOnUsers.keySet())
+            if (loggedOnUsers.contains(checkedId)){
+                if (loggedOnUsers.get(checkedId).equals(userName)) {
                     return checkedId;
                 }
-        }
-        catch (NullPointerException e){}
-        /*System.out.println("Exception occurred in userNameToConId in BGSConnections "+e.getMessage());*/
-        return -1;
-    }
-
-    public BGSClientInformation getUserInformation(String userName) {
-        for(BGSClientInformation cInfo: usersInformation.values()){
-            if(cInfo.getUserName()==userName) {
-                return cInfo;
             }
-        }
-
-        System.out.println("UserName has not been found in getUserInformation in BGSConnections");
-        return null;
+        return -1;
     }
 
     public ConcurrentHashMap<Integer, String> getLoggedOnUsers() {
         return loggedOnUsers;
     }
 
-    public boolean isLogged(Integer conId){
-        if (loggedOnUsers.contains(conId)){
-            loggedOnUsers.get(conId);
-            return true;
+    public boolean isLogged(String userName){
+        try{
+            if ( loggedOnUsers.contains(userName)){
+                return true;
+            }
+            else{
+                return false;
+            }
         }
-        else{
+        catch (Exception e){
             return false;
         }
+
     }
 
-    public boolean isLogged(String userName){
-        int conId = userNameToConId(userName);
-        return isLogged(conId);
-    }
 
     public ConcurrentHashMap<String, ConnectionHandler<String>> getRegisteredUsers() {
         return registeredUsers;
@@ -227,44 +223,47 @@ public class BGSConnections implements Connections<String> {
      * executeAFKMessages durring the time we tried sending. Therefore the function will
      * send normally the message if null occurred
      *
-     * @param userName - the userName to send the message to
+     * @param userName - the handler to send the message to
      * @param msg - the message to send
      */
-    public void sendAFKMessage(String userName, String msg){
+    public synchronized void sendAFKMessage(String userName, String msg){
         try{
-            synchronized (usersAwaitingMessages.get(userName)){
-                usersAwaitingMessages.get(userName).addLast(msg);
+            if (usersAwaitingMessages.keySet().contains(userName)){
+                    usersAwaitingMessages.get(userName).addLast(msg);
+            }
+            else{
+                ConcurrentLinkedDeque<String> newHandlerQueue =  new ConcurrentLinkedDeque<String>();
+                newHandlerQueue.add(msg);
+                usersAwaitingMessages.put(userName,newHandlerQueue);
             }
         }
-        // if got null PTR EX then userName's awaiting messages is removed aka finished aka he logged in
-        catch (NullPointerException e){
-            registeredUsers.get(userName).send(msg);
-        }
+        catch (NullPointerException e){}
     }
 
-    public void executeAFKMessages(String userName){
+    public synchronized void executeAFKMessages(String userName){
         try{
-            // catch userName's awaiting messages's lock
-            synchronized (usersAwaitingMessages.get(userName)){
-                // while user's messages list isn't empty
-                while (!usersAwaitingMessages.get(userName).isEmpty()){
-                    // send the user the message awaiting
-                    registeredUsers.get(userName).send(usersAwaitingMessages.get(userName).pollFirst());
+                for (String message : usersAwaitingMessages.get(userName)){
+                    registeredUsers.get(userName).send(message);
                 }
-                // remove userName from usersAwaitingMessages
                 usersAwaitingMessages.remove(userName);
-            }
         }
         // if get got null PTR EX then return and do nothing because user has no awaiting messages
         catch (NullPointerException e){}
     }
 
     public boolean isRegistered(String userName) {
-        try{
-            registeredUsers.get(userName);
-            return true;
-        }
-        catch (NullPointerException e){
+//        System.out.print("checking if userName: -");
+//        for (char letter : userName.toCharArray())
+//            System.out.print(letter+"-");
+//        System.out.println(" is registered.");
+//        System.out.println();
+
+        try {
+            if (registeredUsers.get(userName) != null) {
+                return true;
+            }
+            return false;
+        } catch (NullPointerException e) {
             return false;
         }
     }

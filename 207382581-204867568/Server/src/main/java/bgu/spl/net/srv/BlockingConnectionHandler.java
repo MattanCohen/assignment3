@@ -47,6 +47,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
 //                System.out.println(client+" has read a line");
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
+                    System.out.println("------------------------------------------------------");
                     System.out.println(client+" sending to protocol to process: "+nextMessage);
                     protocol.process(nextMessage);
                 }
@@ -79,14 +80,14 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     @Override
     public void send(T msg) {
         try {
-            System.out.println("problem is here BlockingConectionHandler 80");
+            System.out.println("send message (string): "+msg);
             byte[] messageInBytes = encdec.encode(msg);
             messageInBytes = Convertor.reverese(messageInBytes);
-            System.out.println("send message: "+Arrays.toString(messageInBytes));
+            System.out.println("send message (bytes): "+Arrays.toString(messageInBytes));
+            System.out.println("------------------------------------------------------");
             out.write(messageInBytes);
             out.flush();
         } catch (IOException e) {
-            System.out.println("exception in send in BlockingConnectionHandler "+e.getMessage());
             close();
         }
     }
